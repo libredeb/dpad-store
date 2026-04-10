@@ -1,0 +1,50 @@
+/*
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ * SPDX-FileCopyrightText: 2026 Juan Pablo Lozano <libredeb@gmail.com>
+ */
+
+window {
+    background-color: #1a1a1a;
+}
+
+label {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+progressbar > trough {
+    background-color: #333333;
+    border-radius: 4px;
+    min-height: 24px;
+}
+
+progressbar > trough > progress {
+    background-color: #2ecc71;
+    background-image: none;
+    min-height: 24px;
+}
+
+row {
+    padding: 18px;
+    background-color: #242424;
+    border-bottom: 1px solid #333;
+}
+
+row:selected {
+    background-color: #3498db;
+}
+
+row:selected label {
+    color: #ffffff;
+}
+
+.installed-badge {
+    color: #2ecc71;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+scrollbar {
+    opacity: 0;
+}

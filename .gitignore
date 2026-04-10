@@ -1,0 +1,7 @@
+*~
+build/
+.flatpak-builder/
+*lightpad-*.pkg.*
+how_to_run.txt
+.vscode
+data/io.github.libredeb.dpad-store.1.gz

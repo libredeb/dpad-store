@@ -1,0 +1,7 @@
+/*
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ * SPDX-FileCopyrightText: 2026 Juan Pablo Lozano <libredeb@gmail.com>
+ */
+
+public const string GETTEXT_PACKAGE = @GETTEXT_PACKAGE@;
+public const string LOCALEDIR = @LOCALEDIR@;

@@ -1,0 +1,41 @@
+.TH "D-Pad Store" "1" "" "Version 0.1.0" "D-Pad Store Manual Page Documentation"
+.SH NAME
+io.github.libredeb.dpad-store \- A full-screen kiosk-style game store
+.SH SYNOPSIS
+.PP
+\f[B]io.github.libredeb.dpad-store\f[R] [ OPTION ] \&...
+.SH DESCRIPTION
+D-Pad Store is a visual wrapper over Pi-Apps scripts.
+It provides a gamepad-navigable full-screen interface to browse and install
+games from the Pi-Apps catalog.
+.SH OPTIONS
+.TP
+\-h, \-\-help
+Show help options.
+.TP
+\-\-help\-all
+Show all help options.
+.TP
+\-\-help\-gapplication
+Show GApplication options.
+.SH CONTROLS
+.TP
+\f[B]Gamepad / Joystick\f[R]
+Navigate through the application list and select games to install.
+.TP
+\f[B]Escape\f[R]
+Quit the application.
+.SH PREREQUISITES
+Pi-Apps must be installed in the user's home directory (~/.pi-apps).
+See https://github.com/Botspot/pi-apps for installation instructions.
+.SH FILES
+.TP
+\f[I]~/pi-apps/\f[R]
+Pi-Apps installation directory, used to load available games and manage installations.
+.TP
+\f[I]~/pi-apps/data/status/\f[R]
+Per-app status files used to determine installation state.
+.SH AUTHOR
+Juan Pablo Lozano \c
+.MT libredeb@gmail.com
+.ME \c

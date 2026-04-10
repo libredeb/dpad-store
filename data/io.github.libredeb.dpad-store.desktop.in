@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=D-Pad Store
+GenericName=Game Store
+Comment=Install games from Pi-Apps
+Exec=io.github.libredeb.dpad-store
+Icon=io.github.libredeb.dpad-store
+Terminal=false
+Type=Application
+Categories=Game;PackageManager;
+Keywords=games;store;pi-apps;install;

@@ -48,11 +48,40 @@ namespace DpadStore.Constants {
     public const string ERROR_LOADING_APPS = "Error loading applications: %s\n";
     public const string ERROR_READING_CATEGORIES = "Error reading categories from %s: %s\n";
 
+    // GFX asset paths
+    public const string GFX_INSTALL_SLUG = "dpad-store";
+    public const string GFX_SUBDIR = "gfx";
+    public const string GFX_DPAD_ICON = "d-pad.svg";
+    public const string GFX_CONTROL_A = "control_A.png";
+    public const string GFX_CONTROL_B = "controls_B.png";
+
+    // UI labels - Footer
+    public const string FOOTER_LABEL_INSTALL = "Install";
+    public const string FOOTER_LABEL_BACK = "Back";
+
+    // Tile configuration
+    public const int TILE_ICON_SIZE = 48;
+    public const int HEADER_ICON_SIZE = 40;
+    public const int FOOTER_ICON_SIZE = 24;
+    public const double PASTEL_BLEND_FACTOR = 1.2;
+
     // CSS classes and icon names
     public const string CSS_CLASS_INSTALLED_BADGE = "installed-badge";
     public const string CSS_CLASS_APP_DIALOG = "app-dialog";
     public const string CSS_CLASS_DIALOG_TITLE = "dialog-title";
     public const string CSS_CLASS_DIALOG_BUTTON = "dialog-button";
     public const string CSS_CLASS_DIALOG_BUTTON_DANGER = "dialog-button-danger";
+    public const string CSS_CLASS_HEADER_BOX = "header-box";
+    public const string CSS_CLASS_HEADER_ICON = "header-icon";
+    public const string CSS_CLASS_HEADER_TITLE = "header-title";
+    public const string CSS_CLASS_APP_TILE = "app-tile";
+    public const string CSS_CLASS_FOOTER_BOX = "footer-box";
+    public const string CSS_CLASS_FOOTER_LABEL = "footer-label";
     public const string ICON_FALLBACK = "package-x-generic";
+
+    public static string get_gfx_path (string filename) {
+        return Path.build_filename (
+            Config.PACKAGE_SHAREDIR, GFX_INSTALL_SLUG, GFX_SUBDIR, filename
+        );
+    }
 }

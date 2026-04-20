@@ -67,7 +67,7 @@ executable(
     asresources,
     'src/Backend/AppLoader.vala',
     'src/Backend/Installer.vala',
-    'src/Widgets/AppListRow.vala',
+    'src/Widgets/AppTile.vala',
     'src/Widgets/MainWindow.vala',
     'src/Constants.vala',
     'src/Application.vala',
@@ -107,5 +107,13 @@ install_data(
     install_dir: join_paths(datadir, 'icons', 'hicolor', '128x128', 'apps'),
     rename: meson.project_name() + '.svg'
 )
+
+gfx_files = ['d-pad.svg', 'control_A.png', 'controls_B.png']
+foreach gfx : gfx_files
+    install_data(
+        join_paths('data', 'gfx', gfx),
+        install_dir: join_paths(datadir, 'dpad-store', 'gfx')
+    )
+endforeach
 
 meson.add_install_script('post_install.py')

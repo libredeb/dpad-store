@@ -25,17 +25,34 @@ progressbar > trough > progress {
     min-height: 24px;
 }
 
-row {
-    padding: 18px;
+/* Header */
+.header-box {
+    padding: 4px 12px;
+}
+
+.header-icon {
+    margin-right: 8px;
+}
+
+.header-title {
+    color: #dcc593;
+}
+
+/* Tiles (FlowBox) */
+flowboxchild.app-tile {
     background-color: #242424;
-    border-bottom: 1px solid #333;
+    border-radius: 12px;
+    padding: 16px 8px;
+    border: 2px solid transparent;
+    transition: border-color 150ms ease-in-out;
 }
 
-row:selected {
-    background-color: #3498db;
+flowboxchild.app-tile:selected {
+    border-color: #dcc593;
+    background-color: rgba(220, 197, 147, 0.18);
 }
 
-row:selected label {
+flowboxchild.app-tile:selected label {
     color: #ffffff;
 }
 
@@ -43,6 +60,21 @@ row:selected label {
     color: #2ecc71;
     font-size: 13px;
     font-weight: bold;
+}
+
+flowboxchild.app-tile:selected .installed-badge {
+    color: #2ecc71;
+}
+
+/* Footer */
+.footer-box {
+    padding: 8px 16px;
+}
+
+.footer-label {
+    color: #aaaaaa;
+    font-size: 14px;
+    font-weight: normal;
 }
 
 scrollbar {

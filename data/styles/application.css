@@ -36,6 +36,7 @@ progressbar > trough > progress {
 
 .header-title {
     color: #dcc593;
+    font-size: 28px;
 }
 
 /* Tiles (FlowBox) */
@@ -43,13 +44,17 @@ flowboxchild.app-tile {
     background-color: #242424;
     border-radius: 12px;
     padding: 16px 8px;
-    border: 2px solid transparent;
-    transition: border-color 150ms ease-in-out;
+    margin: 8px;
+    border: 3px solid transparent;
+    transition: border-color 150ms ease-in-out,
+                box-shadow 150ms ease-in-out;
 }
 
 flowboxchild.app-tile:selected {
     border-color: #dcc593;
-    background-color: rgba(220, 197, 147, 0.18);
+    background-color: #1a1a1a;
+    padding: 13px 5px;
+    box-shadow: 0 0 12px rgba(220, 197, 147, 0.6);
 }
 
 flowboxchild.app-tile:selected label {

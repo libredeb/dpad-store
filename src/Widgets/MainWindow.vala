@@ -68,10 +68,10 @@ namespace DpadStore.Widgets {
             flowbox.set_max_children_per_line (2);
             flowbox.set_homogeneous (true);
             flowbox.set_selection_mode (SelectionMode.SINGLE);
-            flowbox.set_row_spacing (12);
-            flowbox.set_column_spacing (12);
-            flowbox.margin_start = 12;
-            flowbox.margin_end = 12;
+            flowbox.set_row_spacing (0);
+            flowbox.set_column_spacing (0);
+            flowbox.margin_start = 4;
+            flowbox.margin_end = 4;
             populate_grid ();
 
             var scroll = new ScrolledWindow (null, null);

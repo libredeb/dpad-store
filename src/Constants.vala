@@ -17,16 +17,32 @@ namespace DpadStore.Constants {
     public const string PI_APPS_CATEGORY_OVERRIDES_FILE = "category-overrides";
     public const string PI_APPS_MANAGE_SCRIPT = "manage";
     public const string PI_APPS_INSTALL_ACTION = "install";
+    public const string PI_APPS_UNINSTALL_ACTION = "uninstall";
+    public const string PI_APPS_UPDATE_ACTION = "update";
     public const string PI_APPS_INSTALLED_STATUS = "installed";
     public const string SHELL_PATH = "/bin/bash";
 
-    // UI labels
+    // UI labels - Status
     public const string STATUS_IDLE = "Select an application to install...";
-    public const string STATUS_PROCESSING = "Processing %s: %s";
-    public const string STATUS_COMPLETE = "Installation of %s complete.";
+    public const string STATUS_INSTALLING = "Installing %s: %s";
+    public const string STATUS_UNINSTALLING = "Uninstalling %s: %s";
+    public const string STATUS_UPDATING = "Updating %s: %s";
+    public const string STATUS_INSTALL_COMPLETE = "Installation of %s complete.";
+    public const string STATUS_UNINSTALL_COMPLETE = "%s has been uninstalled.";
+    public const string STATUS_UPDATE_COMPLETE = "%s has been updated.";
     public const string STATUS_ERROR = "Error: %s";
     public const string LABEL_INSTALLED = "Installed";
     public const string APP_CATEGORY = "Games";
+
+    // UI labels - Dialog
+    public const string DIALOG_TITLE = "%s is already installed";
+    public const string DIALOG_BTN_UNINSTALL = "Uninstall";
+    public const string DIALOG_BTN_UPDATE = "Update";
+    public const string DIALOG_BTN_CANCEL = "Cancel";
+
+    // Dialog response IDs
+    public const int DIALOG_RESPONSE_UNINSTALL = 1;
+    public const int DIALOG_RESPONSE_UPDATE = 2;
 
     // Error messages
     public const string ERROR_LOADING_APPS = "Error loading applications: %s\n";
@@ -34,5 +50,9 @@ namespace DpadStore.Constants {
 
     // CSS classes and icon names
     public const string CSS_CLASS_INSTALLED_BADGE = "installed-badge";
+    public const string CSS_CLASS_APP_DIALOG = "app-dialog";
+    public const string CSS_CLASS_DIALOG_TITLE = "dialog-title";
+    public const string CSS_CLASS_DIALOG_BUTTON = "dialog-button";
+    public const string CSS_CLASS_DIALOG_BUTTON_DANGER = "dialog-button-danger";
     public const string ICON_FALLBACK = "package-x-generic";
 }

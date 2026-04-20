@@ -9,8 +9,8 @@ namespace DpadStore.Backend {
 
         private string pi_apps_dir;
 
-        public signal void progress_changed (string app_name, string message);
-        public signal void finished (string app_name);
+        public signal void progress_changed (string app_name, string action, string message);
+        public signal void finished (string app_name, string action);
         public signal void failed (string error_message);
 
         public Installer (string pi_apps_dir) {
@@ -18,12 +18,23 @@ namespace DpadStore.Backend {
         }
 
         public void install (string name) {
+            run_action (name, Constants.PI_APPS_INSTALL_ACTION);
+        }
+
+        public void uninstall (string name) {
+            run_action (name, Constants.PI_APPS_UNINSTALL_ACTION);
+        }
+
+        public void update (string name) {
+            run_action (name, Constants.PI_APPS_UPDATE_ACTION);
+        }
+
+        private void run_action (string name, string action) {
             string manage_script = Path.build_filename (
                 pi_apps_dir, Constants.PI_APPS_MANAGE_SCRIPT
             );
             string[] argv = {
-                Constants.SHELL_PATH, manage_script,
-                Constants.PI_APPS_INSTALL_ACTION, name
+                Constants.SHELL_PATH, manage_script, action, name
             };
 
             Pid child_pid;
@@ -44,7 +55,7 @@ namespace DpadStore.Backend {
                     size_t term_pos;
                     try {
                         if (source.read_line (out line, null, out term_pos) == IOStatus.NORMAL) {
-                            progress_changed (name, line.strip ());
+                            progress_changed (name, action, line.strip ());
                         }
                     } catch (Error e) {
                         return false;
@@ -55,7 +66,7 @@ namespace DpadStore.Backend {
                 ChildWatch.add (child_pid, (pid, status) => {
                     Process.close_pid (pid);
                     Idle.add (() => {
-                        finished (name);
+                        finished (name, action);
                         return false;
                     });
                 });

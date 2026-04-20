@@ -10,6 +10,7 @@ namespace DpadStore.Widgets {
     public class AppListRow : ListBoxRow {
 
         public string app_name { get; private set; }
+        public bool is_installed { get { return installed_label != null; } }
         private Label? installed_label;
 
         public AppListRow (string name, string path, bool installed) {
@@ -47,6 +48,12 @@ namespace DpadStore.Widgets {
             installed_label.get_style_context ().add_class (Constants.CSS_CLASS_INSTALLED_BADGE);
             box.pack_end (installed_label, false, false, 0);
             installed_label.show ();
+        }
+
+        public void mark_uninstalled () {
+            if (installed_label == null) return;
+            installed_label.destroy ();
+            installed_label = null;
         }
     }
 }

@@ -59,6 +59,17 @@ namespace DpadStore.Constants {
     public const string FOOTER_LABEL_INSTALL = "Install";
     public const string FOOTER_LABEL_BACK = "Back";
 
+    // Gamepad configuration
+    public const string GAMECONTROLLER_DB_FILE = "gamecontrollerdb.txt";
+    public const uint GAMEPAD_POLL_INTERVAL_MS = 16;
+    public const int16 GAMEPAD_AXIS_THRESHOLD = 16000;
+
+    // Error/warning messages - SDL & Gamepad
+    public const string ERROR_SDL_INIT = "Failed to initialize SDL: %s\n";
+    public const string WARN_NO_CONTROLLER = "No game controller detected";
+    public const string WARN_INCOMPATIBLE_CONTROLLER = "Game controller is not compatible";
+    public const string WARN_UNABLE_OPEN_CONTROLLER = "Unable to open game controller: %s";
+
     // Tile configuration
     public const int TILE_ICON_SIZE = 48;
     public const int HEADER_ICON_SIZE = 40;

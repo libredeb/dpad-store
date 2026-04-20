@@ -14,6 +14,7 @@ namespace DpadStore.Widgets {
         private Label status_label;
         private Backend.AppLoader app_loader;
         private Backend.Installer installer;
+        private Backend.GamepadManager gamepad;
 
         public MainWindow (Gtk.Application app) {
             this.set_application (app);
@@ -33,10 +34,16 @@ namespace DpadStore.Widgets {
             build_ui ();
             connect_signals ();
 
+            gamepad = new Backend.GamepadManager ();
+            connect_gamepad_signals ();
+
             this.show_all ();
 
             var first = flowbox.get_child_at_index (0);
-            if (first != null) first.grab_focus ();
+            if (first != null) {
+                flowbox.select_child (first);
+                first.grab_focus ();
+            }
         }
 
         private void load_css () {
@@ -259,6 +266,75 @@ namespace DpadStore.Widgets {
                 );
                 flowbox.set_sensitive (true);
             });
+        }
+
+        private void connect_gamepad_signals () {
+            gamepad.direction_pressed.connect ((direction) => {
+                navigate_flowbox (direction);
+            });
+
+            gamepad.button_a_pressed.connect (() => {
+                activate_selected_tile ();
+            });
+
+            gamepad.button_b_pressed.connect (() => {
+                this.get_application ().quit ();
+            });
+        }
+
+        private void navigate_flowbox (Backend.GamepadDirection direction) {
+            var selected = flowbox.get_selected_children ();
+            if (selected == null || selected.length () == 0) {
+                var first = flowbox.get_child_at_index (0);
+                if (first != null) {
+                    flowbox.select_child (first);
+                    first.grab_focus ();
+                }
+                return;
+            }
+
+            var current = selected.data;
+            int index = current.get_index ();
+            int columns = (int) flowbox.get_max_children_per_line ();
+            int total = count_flowbox_children ();
+            int next_index = index;
+
+            switch (direction) {
+                case Backend.GamepadDirection.UP:
+                    next_index = index - columns;
+                    break;
+                case Backend.GamepadDirection.DOWN:
+                    next_index = index + columns;
+                    break;
+                case Backend.GamepadDirection.LEFT:
+                    next_index = index - 1;
+                    break;
+                case Backend.GamepadDirection.RIGHT:
+                    next_index = index + 1;
+                    break;
+            }
+
+            if (next_index < 0 || next_index >= total) return;
+
+            var next_child = flowbox.get_child_at_index (next_index);
+            if (next_child != null) {
+                flowbox.select_child (next_child);
+                next_child.grab_focus ();
+            }
+        }
+
+        private void activate_selected_tile () {
+            var selected = flowbox.get_selected_children ();
+            if (selected == null || selected.length () == 0) return;
+            flowbox.child_activated (selected.data);
+        }
+
+        private int count_flowbox_children () {
+            int count = 0;
+            while (flowbox.get_child_at_index (count) != null) {
+                count++;
+            }
+            return count;
         }
 
         private void show_installed_app_dialog (AppTile tile) {

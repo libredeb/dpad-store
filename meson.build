@@ -58,6 +58,7 @@ asresources = gnome.compile_resources(
 
 ValaArgs = [
     '--pkg=config',
+    '--pkg=sdl2',
     '--vapidir=' + VAPI_DIR
 ]
 
@@ -66,6 +67,7 @@ executable(
     config_file,
     asresources,
     'src/Backend/AppLoader.vala',
+    'src/Backend/GamepadManager.vala',
     'src/Backend/Installer.vala',
     'src/Widgets/AppTile.vala',
     'src/Widgets/MainWindow.vala',
@@ -76,6 +78,7 @@ executable(
         dependency('glib-2.0'),
         dependency('gio-2.0'),
         dependency('gtk+-3.0'),
+        dependency('sdl2'),
     ],
     c_args: [
         '-w'
@@ -115,5 +118,11 @@ foreach gfx : gfx_files
         install_dir: join_paths(datadir, 'dpad-store', 'gfx')
     )
 endforeach
+
+# Install the gamecontrollerdb.txt file
+install_data(
+    join_paths('data', 'gamecontrollerdb.txt'),
+    install_dir: join_paths(datadir, 'dpad-store')
+)
 
 meson.add_install_script('post_install.py')

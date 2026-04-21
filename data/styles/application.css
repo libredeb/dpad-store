@@ -41,7 +41,7 @@ progressbar > trough > progress {
 
 /* Tiles (FlowBox) */
 flowboxchild.app-tile {
-    background-color: #242424;
+    background-color: #252234;
     border-radius: 12px;
     padding: 16px 8px;
     margin: 8px;
@@ -52,9 +52,8 @@ flowboxchild.app-tile {
 
 flowboxchild.app-tile:selected {
     border-color: #dcc593;
-    background-color: #1a1a1a;
-    padding: 13px 5px;
-    box-shadow: 0 0 12px rgba(220, 197, 147, 0.6);
+    box-shadow: 0 0 12px rgba(220, 197, 147, 0.6),
+                inset 0 0 0 3px #333333;
 }
 
 flowboxchild.app-tile:selected label {
@@ -62,13 +61,18 @@ flowboxchild.app-tile:selected label {
 }
 
 .installed-badge {
-    color: #2ecc71;
-    font-size: 13px;
+    background-color: #2ecc71;
+    color: #ffffff;
+    font-size: 11px;
     font-weight: bold;
+    border-radius: 12px;
+    padding: 3px 14px;
+    margin-top: 2px;
 }
 
 flowboxchild.app-tile:selected .installed-badge {
-    color: #2ecc71;
+    background-color: #2ecc71;
+    color: #ffffff;
 }
 
 /* Footer */

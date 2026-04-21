@@ -47,6 +47,7 @@ namespace DpadStore.Widgets {
             connect_gamepad_signals ();
 
             this.show_all ();
+            hide_mouse_cursor ();
             dialog_backdrop.hide ();
 
             var first = flowbox.get_child_at_index (0);
@@ -202,6 +203,23 @@ namespace DpadStore.Widgets {
             return item_box;
         }
 
+        private Button build_dialog_button (string icon_name, string text) {
+            var btn = new Button ();
+            var btn_box = new Box (Orientation.HORIZONTAL, 10);
+            btn_box.halign = Align.CENTER;
+
+            var icon = new Image.from_icon_name (
+                icon_name, IconSize.LARGE_TOOLBAR
+            );
+            var label = new Label (text);
+
+            btn_box.pack_start (icon, false, false, 0);
+            btn_box.pack_start (label, false, false, 0);
+            btn.add (btn_box);
+
+            return btn;
+        }
+
         private void build_dialog_overlay () {
             dialog_backdrop = new Box (Orientation.VERTICAL, 0);
             dialog_backdrop.get_style_context ().add_class (
@@ -230,7 +248,8 @@ namespace DpadStore.Widgets {
             buttons_box.margin_end = 24;
             buttons_box.margin_bottom = 24;
 
-            var update_btn = new Button.with_label (
+            var update_btn = build_dialog_button (
+                Constants.ICON_DIALOG_UPDATE,
                 Constants.DIALOG_BTN_UPDATE
             );
             update_btn.get_style_context ().add_class (
@@ -240,7 +259,8 @@ namespace DpadStore.Widgets {
                 handle_dialog_response (Constants.DIALOG_RESPONSE_UPDATE);
             });
 
-            var uninstall_btn = new Button.with_label (
+            var uninstall_btn = build_dialog_button (
+                Constants.ICON_DIALOG_UNINSTALL,
                 Constants.DIALOG_BTN_UNINSTALL
             );
             uninstall_btn.get_style_context ().add_class (
@@ -253,7 +273,8 @@ namespace DpadStore.Widgets {
                 handle_dialog_response (Constants.DIALOG_RESPONSE_UNINSTALL);
             });
 
-            var cancel_btn = new Button.with_label (
+            var cancel_btn = build_dialog_button (
+                Constants.ICON_DIALOG_CANCEL,
                 Constants.DIALOG_BTN_CANCEL
             );
             cancel_btn.get_style_context ().add_class (
@@ -505,6 +526,16 @@ namespace DpadStore.Widgets {
                     flowbox.set_sensitive (false);
                     installer.update (tile.app_name);
                     break;
+            }
+        }
+
+        private void hide_mouse_cursor () {
+            var gdk_window = this.get_window ();
+            if (gdk_window != null) {
+                var blank_cursor = new Gdk.Cursor.for_display (
+                    this.get_display (), Gdk.CursorType.BLANK_CURSOR
+                );
+                gdk_window.set_cursor (blank_cursor);
             }
         }
 

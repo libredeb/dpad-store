@@ -10,8 +10,8 @@ namespace DpadStore.Widgets {
     public class AppTile : FlowBoxChild {
 
         public string app_name { get; private set; }
-        public bool is_installed { get { return installed_label != null; } }
-        private Label? installed_label;
+        public bool is_installed { get; private set; }
+        private Label badge_label;
         private Box content_box;
 
         public AppTile (string name, string path, bool installed) {
@@ -55,49 +55,52 @@ namespace DpadStore.Widgets {
             content_box.pack_start (img, false, false, 0);
             content_box.pack_start (label, false, false, 0);
 
-            if (installed) {
-                installed_label = new Label (Constants.LABEL_INSTALLED);
-                installed_label.get_style_context ().add_class (
-                    Constants.CSS_CLASS_INSTALLED_BADGE
-                );
-                content_box.pack_start (installed_label, false, false, 0);
-            }
+            this.is_installed = installed;
+            badge_label = new Label (Constants.LABEL_INSTALLED);
+            badge_label.get_style_context ().add_class (
+                Constants.CSS_CLASS_INSTALLED_BADGE
+            );
+            badge_label.set_opacity (installed ? 1.0 : 0.0);
+            content_box.pack_start (badge_label, false, false, 0);
 
             this.add (content_box);
 
             if (icon_pixbuf != null) {
-                apply_pastel_background (icon_pixbuf);
+                apply_focus_gradient (icon_pixbuf);
             }
         }
 
         public void mark_installed () {
-            if (installed_label != null) return;
-            installed_label = new Label (Constants.LABEL_INSTALLED);
-            installed_label.get_style_context ().add_class (
-                Constants.CSS_CLASS_INSTALLED_BADGE
-            );
-            content_box.pack_start (installed_label, false, false, 0);
-            installed_label.show ();
+            is_installed = true;
+            badge_label.set_opacity (1.0);
         }
 
         public void mark_uninstalled () {
-            if (installed_label == null) return;
-            installed_label.destroy ();
-            installed_label = null;
+            is_installed = false;
+            badge_label.set_opacity (0.0);
         }
 
-        private void apply_pastel_background (Gdk.Pixbuf pixbuf) {
+        private void apply_focus_gradient (Gdk.Pixbuf pixbuf) {
             int r_avg, g_avg, b_avg;
             extract_dominant_color (pixbuf, out r_avg, out g_avg, out b_avg);
 
-            double blend = Constants.PASTEL_BLEND_FACTOR;
-            int pr = (int) ((r_avg + 255 * blend) / (1.0 + blend));
-            int pg = (int) ((g_avg + 255 * blend) / (1.0 + blend));
-            int pb = (int) ((b_avg + 255 * blend) / (1.0 + blend));
+            double dark = Constants.PASTEL_DARK_FACTOR;
+            int dr = (int) (r_avg * dark);
+            int dg = (int) (g_avg * dark);
+            int db = (int) (b_avg * dark);
 
-            var css_str = ".app-tile { background-color: rgba(%d, %d, %d, 0.45); }".printf (
-                pr, pg, pb
-            );
+            double darker = Constants.PASTEL_DARKER_FACTOR;
+            int ddr = (int) (r_avg * darker);
+            int ddg = (int) (g_avg * darker);
+            int ddb = (int) (b_avg * darker);
+
+            var tile_class = Constants.CSS_CLASS_APP_TILE;
+            var css_str = (
+                ".%s:selected { background-image: " +
+                "linear-gradient(to bottom, " +
+                "rgba(%d, %d, %d, 0.95), " +
+                "rgba(%d, %d, %d, 0.95)); }"
+            ).printf (tile_class, dr, dg, db, ddr, ddg, ddb);
 
             var provider = new CssProvider ();
             try {

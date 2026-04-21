@@ -77,7 +77,8 @@ namespace DpadStore.Constants {
     public const int TILE_ICON_SIZE = 48;
     public const int HEADER_ICON_SIZE = 40;
     public const int FOOTER_ICON_SIZE = 24;
-    public const double PASTEL_BLEND_FACTOR = 1.2;
+    public const double PASTEL_DARK_FACTOR = 0.55;
+    public const double PASTEL_DARKER_FACTOR = 0.3;
 
     // CSS classes and icon names
     public const string CSS_CLASS_INSTALLED_BADGE = "installed-badge";
@@ -93,6 +94,9 @@ namespace DpadStore.Constants {
     public const string CSS_CLASS_FOOTER_BOX = "footer-box";
     public const string CSS_CLASS_FOOTER_LABEL = "footer-label";
     public const string ICON_FALLBACK = "package-x-generic";
+    public const string ICON_DIALOG_UPDATE = "view-refresh-symbolic";
+    public const string ICON_DIALOG_UNINSTALL = "edit-delete-symbolic";
+    public const string ICON_DIALOG_CANCEL = "window-close-symbolic";
 
     public static string get_gfx_path (string filename) {
         return Path.build_filename (

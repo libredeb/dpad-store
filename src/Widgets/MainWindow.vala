@@ -47,6 +47,7 @@ namespace DpadStore.Widgets {
             connect_gamepad_signals ();
 
             this.show_all ();
+            dialog_backdrop.hide ();
 
             var first = flowbox.get_child_at_index (0);
             if (first != null) {
@@ -210,8 +211,6 @@ namespace DpadStore.Widgets {
             dialog_backdrop.set_valign (Align.FILL);
             dialog_backdrop.set_hexpand (true);
             dialog_backdrop.set_vexpand (true);
-            dialog_backdrop.set_no_show_all (true);
-
             var dialog_panel = new Box (Orientation.VERTICAL, 16);
             dialog_panel.get_style_context ().add_class (
                 Constants.CSS_CLASS_APP_DIALOG

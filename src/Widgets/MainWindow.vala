@@ -16,7 +16,16 @@ namespace DpadStore.Widgets {
         private Backend.Installer installer;
         private Backend.GamepadManager gamepad;
 
+        private Overlay overlay;
+        private Box dialog_backdrop;
+        private Label dialog_title_label;
+        private Button[] dialog_buttons;
+        private int dialog_focused_index;
+        private bool dialog_active;
+        private AppTile? dialog_tile;
+
         public MainWindow (Gtk.Application app) {
+            this.fullscreen ();
             this.set_application (app);
             this.set_decorated (false);
             this.set_default_size (720, 720);
@@ -97,7 +106,10 @@ namespace DpadStore.Widgets {
             root_box.pack_end (build_footer (), false, false, 0);
             root_box.pack_end (progress_box, false, false, 0);
 
-            this.add (root_box);
+            overlay = new Overlay ();
+            overlay.add (root_box);
+            build_dialog_overlay ();
+            this.add (overlay);
         }
 
         private Box build_header () {
@@ -189,6 +201,81 @@ namespace DpadStore.Widgets {
             return item_box;
         }
 
+        private void build_dialog_overlay () {
+            dialog_backdrop = new Box (Orientation.VERTICAL, 0);
+            dialog_backdrop.get_style_context ().add_class (
+                Constants.CSS_CLASS_DIALOG_BACKDROP
+            );
+            dialog_backdrop.set_halign (Align.FILL);
+            dialog_backdrop.set_valign (Align.FILL);
+            dialog_backdrop.set_hexpand (true);
+            dialog_backdrop.set_vexpand (true);
+            dialog_backdrop.set_no_show_all (true);
+
+            var dialog_panel = new Box (Orientation.VERTICAL, 16);
+            dialog_panel.get_style_context ().add_class (
+                Constants.CSS_CLASS_APP_DIALOG
+            );
+            dialog_panel.set_halign (Align.CENTER);
+            dialog_panel.set_valign (Align.CENTER);
+            dialog_panel.set_size_request (Constants.DIALOG_WIDTH, -1);
+
+            dialog_title_label = new Label ("");
+            dialog_title_label.get_style_context ().add_class (
+                Constants.CSS_CLASS_DIALOG_TITLE
+            );
+            dialog_panel.pack_start (dialog_title_label, false, false, 16);
+
+            var buttons_box = new Box (Orientation.VERTICAL, 8);
+            buttons_box.margin_start = 24;
+            buttons_box.margin_end = 24;
+            buttons_box.margin_bottom = 24;
+
+            var update_btn = new Button.with_label (
+                Constants.DIALOG_BTN_UPDATE
+            );
+            update_btn.get_style_context ().add_class (
+                Constants.CSS_CLASS_DIALOG_BUTTON
+            );
+            update_btn.clicked.connect (() => {
+                handle_dialog_response (Constants.DIALOG_RESPONSE_UPDATE);
+            });
+
+            var uninstall_btn = new Button.with_label (
+                Constants.DIALOG_BTN_UNINSTALL
+            );
+            uninstall_btn.get_style_context ().add_class (
+                Constants.CSS_CLASS_DIALOG_BUTTON
+            );
+            uninstall_btn.get_style_context ().add_class (
+                Constants.CSS_CLASS_DIALOG_BUTTON_DANGER
+            );
+            uninstall_btn.clicked.connect (() => {
+                handle_dialog_response (Constants.DIALOG_RESPONSE_UNINSTALL);
+            });
+
+            var cancel_btn = new Button.with_label (
+                Constants.DIALOG_BTN_CANCEL
+            );
+            cancel_btn.get_style_context ().add_class (
+                Constants.CSS_CLASS_DIALOG_BUTTON
+            );
+            cancel_btn.clicked.connect (() => {
+                hide_dialog_overlay ();
+            });
+
+            buttons_box.pack_start (update_btn, false, false, 0);
+            buttons_box.pack_start (uninstall_btn, false, false, 0);
+            buttons_box.pack_start (cancel_btn, false, false, 0);
+
+            dialog_panel.pack_start (buttons_box, false, false, 0);
+
+            dialog_buttons = { update_btn, uninstall_btn, cancel_btn };
+
+            dialog_backdrop.set_center_widget (dialog_panel);
+            overlay.add_overlay (dialog_backdrop);
+        }
+
         private void populate_grid () {
             var app_names = app_loader.load_app_names ();
             for (int i = 0; i < app_names.length; i++) {
@@ -270,15 +357,27 @@ namespace DpadStore.Widgets {
 
         private void connect_gamepad_signals () {
             gamepad.direction_pressed.connect ((direction) => {
-                navigate_flowbox (direction);
+                if (dialog_active) {
+                    navigate_dialog (direction);
+                } else {
+                    navigate_flowbox (direction);
+                }
             });
 
             gamepad.button_a_pressed.connect (() => {
-                activate_selected_tile ();
+                if (dialog_active) {
+                    activate_dialog_button ();
+                } else {
+                    activate_selected_tile ();
+                }
             });
 
             gamepad.button_b_pressed.connect (() => {
-                this.get_application ().quit ();
+                if (dialog_active) {
+                    hide_dialog_overlay ();
+                } else {
+                    this.get_application ().quit ();
+                }
             });
         }
 
@@ -338,65 +437,65 @@ namespace DpadStore.Widgets {
         }
 
         private void show_installed_app_dialog (AppTile tile) {
-            var dialog = new Dialog ();
-            dialog.set_transient_for (this);
-            dialog.set_modal (true);
-            dialog.set_decorated (false);
-            dialog.get_style_context ().add_class (
-                Constants.CSS_CLASS_APP_DIALOG
-            );
-
-            var content = dialog.get_content_area ();
-            content.set_spacing (16);
-            content.margin = 24;
-
-            var title = new Label (
+            dialog_tile = tile;
+            dialog_title_label.set_text (
                 Constants.DIALOG_TITLE.printf (tile.app_name)
             );
-            title.get_style_context ().add_class (
-                Constants.CSS_CLASS_DIALOG_TITLE
-            );
-            content.pack_start (title, false, false, 8);
+            dialog_focused_index = dialog_buttons.length - 1;
+            dialog_active = true;
+            dialog_backdrop.show_all ();
+            dialog_buttons[dialog_focused_index].grab_focus ();
+        }
 
-            var action_area = dialog.get_action_area () as ButtonBox;
-            if (action_area != null) {
-                action_area.set_orientation (Orientation.VERTICAL);
-                action_area.set_layout (ButtonBoxStyle.EXPAND);
-                action_area.set_spacing (8);
-                action_area.margin = 16;
+        private void navigate_dialog (Backend.GamepadDirection direction) {
+            int count = dialog_buttons.length;
+            switch (direction) {
+                case Backend.GamepadDirection.UP:
+                    dialog_focused_index =
+                        (dialog_focused_index - 1 + count) % count;
+                    break;
+                case Backend.GamepadDirection.DOWN:
+                    dialog_focused_index =
+                        (dialog_focused_index + 1) % count;
+                    break;
+                default:
+                    return;
             }
+            dialog_buttons[dialog_focused_index].grab_focus ();
+        }
 
-            var update_btn = dialog.add_button (
-                Constants.DIALOG_BTN_UPDATE,
-                Constants.DIALOG_RESPONSE_UPDATE
-            );
-            update_btn.get_style_context ().add_class (
-                Constants.CSS_CLASS_DIALOG_BUTTON
-            );
+        private void activate_dialog_button () {
+            switch (dialog_focused_index) {
+                case 0:
+                    handle_dialog_response (
+                        Constants.DIALOG_RESPONSE_UPDATE
+                    );
+                    break;
+                case 1:
+                    handle_dialog_response (
+                        Constants.DIALOG_RESPONSE_UNINSTALL
+                    );
+                    break;
+                default:
+                    hide_dialog_overlay ();
+                    break;
+            }
+        }
 
-            var uninstall_btn = dialog.add_button (
-                Constants.DIALOG_BTN_UNINSTALL,
-                Constants.DIALOG_RESPONSE_UNINSTALL
-            );
-            uninstall_btn.get_style_context ().add_class (
-                Constants.CSS_CLASS_DIALOG_BUTTON
-            );
-            uninstall_btn.get_style_context ().add_class (
-                Constants.CSS_CLASS_DIALOG_BUTTON_DANGER
-            );
+        private void hide_dialog_overlay () {
+            dialog_active = false;
+            dialog_backdrop.hide ();
+            dialog_tile = null;
+            var selected = flowbox.get_selected_children ();
+            if (selected != null && selected.length () > 0) {
+                selected.data.grab_focus ();
+            }
+        }
 
-            var cancel_btn = dialog.add_button (
-                Constants.DIALOG_BTN_CANCEL,
-                ResponseType.CANCEL
-            );
-            cancel_btn.get_style_context ().add_class (
-                Constants.CSS_CLASS_DIALOG_BUTTON
-            );
-
-            dialog.show_all ();
-            cancel_btn.grab_focus ();
-            int response = dialog.run ();
-            dialog.destroy ();
+        private void handle_dialog_response (int response) {
+            if (dialog_tile == null) return;
+            var tile = dialog_tile;
+            hide_dialog_overlay ();
 
             switch (response) {
                 case Constants.DIALOG_RESPONSE_UNINSTALL:
@@ -406,8 +505,6 @@ namespace DpadStore.Widgets {
                 case Constants.DIALOG_RESPONSE_UPDATE:
                     flowbox.set_sensitive (false);
                     installer.update (tile.app_name);
-                    break;
-                default:
                     break;
             }
         }

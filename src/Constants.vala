@@ -70,6 +70,9 @@ namespace DpadStore.Constants {
     public const string WARN_INCOMPATIBLE_CONTROLLER = "Game controller is not compatible";
     public const string WARN_UNABLE_OPEN_CONTROLLER = "Unable to open game controller: %s";
 
+    // Dialog configuration
+    public const int DIALOG_WIDTH = 420;
+
     // Tile configuration
     public const int TILE_ICON_SIZE = 48;
     public const int HEADER_ICON_SIZE = 40;
@@ -78,6 +81,7 @@ namespace DpadStore.Constants {
 
     // CSS classes and icon names
     public const string CSS_CLASS_INSTALLED_BADGE = "installed-badge";
+    public const string CSS_CLASS_DIALOG_BACKDROP = "dialog-backdrop";
     public const string CSS_CLASS_APP_DIALOG = "app-dialog";
     public const string CSS_CLASS_DIALOG_TITLE = "dialog-title";
     public const string CSS_CLASS_DIALOG_BUTTON = "dialog-button";

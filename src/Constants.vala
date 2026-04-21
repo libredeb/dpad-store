@@ -21,6 +21,7 @@ namespace DpadStore.Constants {
     public const string PI_APPS_UPDATE_ACTION = "update";
     public const string PI_APPS_INSTALLED_STATUS = "installed";
     public const string SHELL_PATH = "/bin/bash";
+    public const string ANSI_ESCAPE_PATTERN = "\\x1b\\[[0-9;]*[a-zA-Z]";
 
     // UI labels - Status
     public const string STATUS_IDLE = "Select an application to install...";
@@ -80,6 +81,14 @@ namespace DpadStore.Constants {
     public const double PASTEL_DARK_FACTOR = 0.55;
     public const double PASTEL_DARKER_FACTOR = 0.3;
 
+    // Dithering configuration
+    public const int DITHER_TILE_SIZE = 64;
+    public const int DITHER_NOISE_ALPHA = 6;
+    public const double TILE_CORNER_RADIUS = 12.0;
+    public const double GRADIENT_ALPHA = 0.95;
+    public const string CSS_TILE_TRANSPARENT_BG =
+        ".%s:selected { background-image: none; background-color: transparent; }";
+
     // CSS classes and icon names
     public const string CSS_CLASS_INSTALLED_BADGE = "installed-badge";
     public const string CSS_CLASS_DIALOG_BACKDROP = "dialog-backdrop";
@@ -95,7 +104,7 @@ namespace DpadStore.Constants {
     public const string CSS_CLASS_FOOTER_LABEL = "footer-label";
     public const string ICON_FALLBACK = "package-x-generic";
     public const string ICON_DIALOG_UPDATE = "view-refresh-symbolic";
-    public const string ICON_DIALOG_UNINSTALL = "edit-delete-symbolic";
+    public const string ICON_DIALOG_UNINSTALL = "user-trash-symbolic";
     public const string ICON_DIALOG_CANCEL = "window-close-symbolic";
 
     public static string get_gfx_path (string filename) {

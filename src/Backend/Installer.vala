@@ -29,6 +29,15 @@ namespace DpadStore.Backend {
             run_action (name, Constants.PI_APPS_UPDATE_ACTION);
         }
 
+        private string strip_ansi_codes (string text) {
+            try {
+                var regex = new Regex (Constants.ANSI_ESCAPE_PATTERN);
+                return regex.replace (text, -1, 0, "");
+            } catch (RegexError e) {
+                return text;
+            }
+        }
+
         private void run_action (string name, string action) {
             string manage_script = Path.build_filename (
                 pi_apps_dir, Constants.PI_APPS_MANAGE_SCRIPT
@@ -55,7 +64,8 @@ namespace DpadStore.Backend {
                     size_t term_pos;
                     try {
                         if (source.read_line (out line, null, out term_pos) == IOStatus.NORMAL) {
-                            progress_changed (name, action, line.strip ());
+                            string clean = strip_ansi_codes (line.strip ());
+                            progress_changed (name, action, clean);
                         }
                     } catch (Error e) {
                         return false;

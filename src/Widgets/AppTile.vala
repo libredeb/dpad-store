@@ -14,6 +14,15 @@ namespace DpadStore.Widgets {
         private Label badge_label;
         private Box content_box;
 
+        private bool has_gradient = false;
+        private double grad_r1;
+        private double grad_g1;
+        private double grad_b1;
+        private double grad_r2;
+        private double grad_g2;
+        private double grad_b2;
+        private static Cairo.Pattern? dither_pattern = null;
+
         public AppTile (string name, string path, bool installed) {
             this.app_name = name;
 
@@ -80,28 +89,62 @@ namespace DpadStore.Widgets {
             badge_label.set_opacity (0.0);
         }
 
+        private static void ensure_dither_pattern () {
+            if (dither_pattern != null) return;
+
+            int size = Constants.DITHER_TILE_SIZE;
+            var surface = new Cairo.ImageSurface (
+                Cairo.Format.ARGB32, size, size
+            );
+            unowned uint8[] data = surface.get_data ();
+            int stride = surface.get_stride ();
+            uint8 alpha = (uint8) Constants.DITHER_NOISE_ALPHA;
+
+            uint32 seed = 42;
+            for (int y = 0; y < size; y++) {
+                for (int x = 0; x < size; x++) {
+                    seed = seed * 1664525 + 1013904223;
+                    bool bright = ((seed >> 16) & 1) == 0;
+                    int off = y * stride + x * 4;
+                    if (bright) {
+                        data[off + 0] = alpha;
+                        data[off + 1] = alpha;
+                        data[off + 2] = alpha;
+                        data[off + 3] = alpha;
+                    } else {
+                        data[off + 0] = 0;
+                        data[off + 1] = 0;
+                        data[off + 2] = 0;
+                        data[off + 3] = alpha;
+                    }
+                }
+            }
+            surface.mark_dirty ();
+
+            dither_pattern = new Cairo.Pattern.for_surface (surface);
+            dither_pattern.set_extend (Cairo.Extend.REPEAT);
+        }
+
         private void apply_focus_gradient (Gdk.Pixbuf pixbuf) {
             int r_avg, g_avg, b_avg;
             extract_dominant_color (pixbuf, out r_avg, out g_avg, out b_avg);
 
             double dark = Constants.PASTEL_DARK_FACTOR;
-            int dr = (int) (r_avg * dark);
-            int dg = (int) (g_avg * dark);
-            int db = (int) (b_avg * dark);
+            grad_r1 = r_avg * dark / 255.0;
+            grad_g1 = g_avg * dark / 255.0;
+            grad_b1 = b_avg * dark / 255.0;
 
             double darker = Constants.PASTEL_DARKER_FACTOR;
-            int ddr = (int) (r_avg * darker);
-            int ddg = (int) (g_avg * darker);
-            int ddb = (int) (b_avg * darker);
+            grad_r2 = r_avg * darker / 255.0;
+            grad_g2 = g_avg * darker / 255.0;
+            grad_b2 = b_avg * darker / 255.0;
 
-            var tile_class = Constants.CSS_CLASS_APP_TILE;
-            var css_str = (
-                ".%s:selected { background-image: " +
-                "linear-gradient(to bottom, " +
-                "rgba(%d, %d, %d, 0.95), " +
-                "rgba(%d, %d, %d, 0.95)); }"
-            ).printf (tile_class, dr, dg, db, ddr, ddg, ddb);
+            has_gradient = true;
+            ensure_dither_pattern ();
 
+            var css_str = Constants.CSS_TILE_TRANSPARENT_BG.printf (
+                Constants.CSS_CLASS_APP_TILE
+            );
             var provider = new CssProvider ();
             try {
                 provider.load_from_data (css_str, css_str.length);
@@ -111,6 +154,47 @@ namespace DpadStore.Widgets {
             } catch (Error e) {
                 stderr.printf ("CSS error: %s\n", e.message);
             }
+        }
+
+        public override bool draw (Cairo.Context cr) {
+            if (has_gradient && this.is_selected ()) {
+                cr.save ();
+
+                int w = get_allocated_width ();
+                int h = get_allocated_height ();
+                double radius = Constants.TILE_CORNER_RADIUS;
+
+                cr.new_path ();
+                cr.arc (w - radius, radius, radius,
+                    -Math.PI / 2.0, 0);
+                cr.arc (w - radius, h - radius, radius,
+                    0, Math.PI / 2.0);
+                cr.arc (radius, h - radius, radius,
+                    Math.PI / 2.0, Math.PI);
+                cr.arc (radius, radius, radius,
+                    Math.PI, 3.0 * Math.PI / 2.0);
+                cr.close_path ();
+                cr.clip ();
+
+                var gradient = new Cairo.Pattern.linear (0, 0, 0, h);
+                gradient.add_color_stop_rgba (
+                    0.0, grad_r1, grad_g1, grad_b1,
+                    Constants.GRADIENT_ALPHA
+                );
+                gradient.add_color_stop_rgba (
+                    1.0, grad_r2, grad_g2, grad_b2,
+                    Constants.GRADIENT_ALPHA
+                );
+                cr.set_source (gradient);
+                cr.paint ();
+
+                cr.set_source (dither_pattern);
+                cr.paint ();
+
+                cr.restore ();
+            }
+
+            return base.draw (cr);
         }
 
         private void extract_dominant_color (

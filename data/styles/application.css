@@ -4,25 +4,13 @@
  */
 
 window {
-    background-color: #1a1a1a;
+    background-color: #010203;
 }
 
 label {
     color: #ffffff;
     font-size: 16px;
     font-weight: bold;
-}
-
-progressbar > trough {
-    background-color: #333333;
-    border-radius: 4px;
-    min-height: 24px;
-}
-
-progressbar > trough > progress {
-    background-color: #2ecc71;
-    background-image: none;
-    min-height: 24px;
 }
 
 /* Header */
@@ -39,45 +27,169 @@ progressbar > trough > progress {
     font-size: 28px;
 }
 
-/* Tiles (FlowBox) */
-flowboxchild.app-tile {
-    background-color: #252234;
+/* Layout Containers */
+.content-box {
+    margin: 0 12px;
+}
+
+.app-list-panel {
+    background-color: #151718;
+    border: 1px solid #333333;
+}
+
+.detail-panel-container {
+    background-color: #151718;
+    border: 1px solid #333333;
     border-radius: 12px;
-    padding: 16px 8px;
-    margin: 8px;
-    border: 3px solid transparent;
-    transition: border-color 150ms ease-in-out,
-                box-shadow 150ms ease-in-out;
 }
 
-flowboxchild.app-tile:selected {
-    border-color: #dcc593;
-    box-shadow: 0 0 12px rgba(220, 197, 147, 0.6),
-                inset 0 0 0 3px #333333;
+/* App List Tiles (ListBox) */
+list {
+    background-color: transparent;
 }
 
-flowboxchild.app-tile:selected label {
+row.app-tile {
+    background-color: #151718;
+    border-radius: 0;
+    margin: 0;
+    padding: 6px 4px;
+    border-bottom: 1px solid #333333;
+    transition: box-shadow 150ms ease-in-out;
+}
+
+row.app-tile:selected {
+    background-color: #1c1e20;
+    box-shadow: inset 0 0 0 3px #dcc593;
+}
+
+row.app-tile:selected label {
     color: #ffffff;
 }
 
-.installed-badge {
-    background-color: #2ecc71;
-    color: #ffffff;
-    font-size: 11px;
+.tile-name {
+    font-size: 15px;
     font-weight: bold;
-    border-radius: 12px;
-    padding: 3px 14px;
-    margin-top: 2px;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    color: #ffffff;
 }
 
-flowboxchild.app-tile:selected .installed-badge {
-    background-color: #2ecc71;
+.tile-category {
+    font-size: 12px;
+    font-weight: normal;
+    color: #999999;
+}
+
+/* Detail Panel */
+.detail-panel {
+    background-color: #151718;
+    padding: 12px;
+}
+
+.detail-cover {
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.detail-status {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.detail-status-installed {
+    color: #2ecc71;
+}
+
+.detail-status-not-installed {
+    color: #888888;
+}
+
+.detail-status-installing {
+    color: #f39c12;
+}
+
+/* Action Buttons */
+.action-button {
+    background-color: #333333;
+    background-image: none;
     color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    border: 2px solid #444444;
+    padding: 10px;
+    min-height: 40px;
+}
+
+.action-button:focus {
+    background-color: #3498db;
+    background-image: none;
+    border-color: #5dade2;
+}
+
+.action-button-primary:focus {
+    background-color: #27ae60;
+    background-image: none;
+    border-color: #2ecc71;
+}
+
+.action-button-danger:focus {
+    background-color: #e74c3c;
+    background-image: none;
+    border-color: #c0392b;
+}
+
+/* Console Output */
+.console-box {
+    background-color: #222222;
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+.console-header label {
+    font-size: 13px;
+    font-weight: normal;
+    color: #cccccc;
+}
+
+.console-toggle {
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    padding: 4px;
+    min-height: 0;
+    min-width: 0;
+}
+
+.console-toggle:focus {
+    background-color: #dcc593;
+    background-image: none;
+    border-radius: 4px;
+}
+
+.console-text {
+    background-color: #111111;
+    color: #aaffaa;
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: normal;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+progressbar > trough {
+    background-color: #333333;
+    border-radius: 4px;
+    min-height: 20px;
+}
+
+progressbar > trough > progress {
+    background-color: #dcc593;
+    background-image: none;
+    min-height: 20px;
 }
 
 /* Footer */
 .footer-box {
+    background-color: #0a0e11;
     padding: 8px 16px;
 }
 
@@ -89,45 +201,4 @@ flowboxchild.app-tile:selected .installed-badge {
 
 scrollbar {
     opacity: 0;
-}
-
-.dialog-backdrop {
-    background-color: rgba(0, 0, 0, 0.75);
-}
-
-.app-dialog {
-    background-color: #2a2a2a;
-    border: 2px solid #444444;
-    border-radius: 12px;
-    padding: 8px;
-}
-
-.dialog-title {
-    font-size: 20px;
-    color: #ffffff;
-    font-weight: bold;
-}
-
-.dialog-button {
-    background-color: #333333;
-    background-image: none;
-    color: #ffffff;
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 6px;
-    border: 1px solid #444444;
-    padding: 12px;
-    min-height: 48px;
-}
-
-.dialog-button:focus {
-    background-color: #3498db;
-    background-image: none;
-    border-color: #5dade2;
-}
-
-.dialog-button-danger:focus {
-    background-color: #e74c3c;
-    background-image: none;
-    border-color: #c0392b;
 }

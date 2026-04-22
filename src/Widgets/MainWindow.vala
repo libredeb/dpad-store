@@ -9,29 +9,25 @@ namespace DpadStore.Widgets {
 
     public class MainWindow : Window {
 
-        private FlowBox flowbox;
-        private ProgressBar progress_bar;
-        private Label status_label;
+        private ListBox listbox;
+        private DetailPanel detail_panel;
+        private ConsoleOutput console_output;
         private Backend.AppLoader app_loader;
         private Backend.Installer installer;
         private Backend.GamepadManager gamepad;
 
-        private Overlay overlay;
-        private Box dialog_backdrop;
-        private Label dialog_title_label;
-        private Button[] dialog_buttons;
-        private int dialog_focused_index;
-        private bool dialog_active;
-        private AppTile? dialog_tile;
+        private bool focus_on_detail;
 
         public MainWindow (Gtk.Application app) {
-            this.fullscreen ();
+            //this.fullscreen ();
             this.set_application (app);
             this.set_decorated (false);
             this.set_default_size (720, 720);
             this.set_keep_above (true);
             this.set_title (Constants.PROGRAM_NAME);
             this.set_icon_name (Constants.APP_ID);
+
+            focus_on_detail = false;
 
             var pi_apps_dir = Path.build_filename (
                 Environment.get_home_dir (), Constants.PI_APPS_DIR
@@ -47,13 +43,14 @@ namespace DpadStore.Widgets {
             connect_gamepad_signals ();
 
             this.show_all ();
+            console_output.hide ();
             hide_mouse_cursor ();
-            dialog_backdrop.hide ();
 
-            var first = flowbox.get_child_at_index (0);
+            var first = listbox.get_row_at_index (0);
             if (first != null) {
-                flowbox.select_child (first);
+                listbox.select_row (first);
                 first.grab_focus ();
+                update_detail_for_row (first);
             }
         }
 
@@ -74,49 +71,51 @@ namespace DpadStore.Widgets {
 
             root_box.pack_start (build_header (), false, false, 0);
 
-            flowbox = new FlowBox ();
-            flowbox.set_min_children_per_line (2);
-            flowbox.set_max_children_per_line (2);
-            flowbox.set_homogeneous (true);
-            flowbox.set_selection_mode (SelectionMode.SINGLE);
-            flowbox.set_row_spacing (0);
-            flowbox.set_column_spacing (0);
-            flowbox.margin_start = 4;
-            flowbox.margin_end = 4;
-            populate_grid ();
+            var content_box = new Box (Orientation.HORIZONTAL, 12);
+            content_box.get_style_context ().add_class (
+                Constants.CSS_CLASS_CONTENT_BOX
+            );
 
-            var scroll = new ScrolledWindow (null, null);
-            scroll.set_policy (PolicyType.NEVER, PolicyType.AUTOMATIC);
-            scroll.add (flowbox);
-            root_box.pack_start (scroll, true, true, 0);
+            listbox = new ListBox ();
+            listbox.set_selection_mode (SelectionMode.SINGLE);
+            populate_list ();
 
-            var progress_box = new Box (Orientation.VERTICAL, 8);
-            progress_box.margin_start = 25;
-            progress_box.margin_end = 25;
-            progress_box.margin_top = 12;
-            progress_box.margin_bottom = 8;
+            var list_scroll = new ScrolledWindow (null, null);
+            list_scroll.set_policy (PolicyType.NEVER, PolicyType.AUTOMATIC);
+            list_scroll.get_style_context ().add_class (
+                Constants.CSS_CLASS_APP_LIST_PANEL
+            );
+            list_scroll.add (listbox);
 
-            status_label = new Label (Constants.STATUS_IDLE);
-            status_label.set_max_width_chars (65);
-            status_label.set_ellipsize (Pango.EllipsizeMode.END);
-            progress_bar = new ProgressBar ();
-            progress_bar.set_size_request (-1, 24);
+            detail_panel = new DetailPanel ();
 
-            progress_box.pack_start (status_label, false, false, 0);
-            progress_box.pack_start (progress_bar, false, false, 0);
+            var detail_scroll = new ScrolledWindow (null, null);
+            detail_scroll.set_policy (PolicyType.NEVER, PolicyType.AUTOMATIC);
+            detail_scroll.get_style_context ().add_class (
+                Constants.CSS_CLASS_DETAIL_PANEL_CONTAINER
+            );
+            detail_scroll.add (detail_panel);
 
+            int detail_width = (int) (720 * Constants.DETAIL_PANEL_RATIO);
+            int list_width = 720 - detail_width;
+            list_scroll.set_size_request (list_width, -1);
+            detail_scroll.set_size_request (detail_width, -1);
+
+            content_box.pack_start (list_scroll, false, true, 0);
+            content_box.pack_start (detail_scroll, true, true, 0);
+
+            root_box.pack_start (content_box, true, true, 0);
+
+            console_output = new ConsoleOutput ();
             root_box.pack_end (build_footer (), false, false, 0);
-            root_box.pack_end (progress_box, false, false, 0);
+            root_box.pack_end (console_output, false, false, 0);
 
-            overlay = new Overlay ();
-            overlay.add (root_box);
-            build_dialog_overlay ();
-            this.add (overlay);
+            this.add (root_box);
         }
 
         private Box build_header () {
             var header_box = new Box (Orientation.HORIZONTAL, 12);
-            header_box.halign = Align.CENTER;
+            header_box.halign = Align.START;
             header_box.margin = 20;
             header_box.get_style_context ().add_class (
                 Constants.CSS_CLASS_HEADER_BOX
@@ -155,7 +154,6 @@ namespace DpadStore.Widgets {
             footer_box.get_style_context ().add_class (
                 Constants.CSS_CLASS_FOOTER_BOX
             );
-            footer_box.margin_bottom = 16;
             footer_box.margin_top = 8;
 
             var left_box = new Box (Orientation.HORIZONTAL, 0);
@@ -203,107 +201,22 @@ namespace DpadStore.Widgets {
             return item_box;
         }
 
-        private Button build_dialog_button (string icon_name, string text) {
-            var btn = new Button ();
-            var btn_box = new Box (Orientation.HORIZONTAL, 10);
-            btn_box.halign = Align.CENTER;
-
-            var icon = new Image.from_icon_name (
-                icon_name, IconSize.LARGE_TOOLBAR
-            );
-            var label = new Label (text);
-
-            btn_box.pack_start (icon, false, false, 0);
-            btn_box.pack_start (label, false, false, 0);
-            btn.add (btn_box);
-
-            return btn;
-        }
-
-        private void build_dialog_overlay () {
-            dialog_backdrop = new Box (Orientation.VERTICAL, 0);
-            dialog_backdrop.get_style_context ().add_class (
-                Constants.CSS_CLASS_DIALOG_BACKDROP
-            );
-            dialog_backdrop.set_halign (Align.FILL);
-            dialog_backdrop.set_valign (Align.FILL);
-            dialog_backdrop.set_hexpand (true);
-            dialog_backdrop.set_vexpand (true);
-            var dialog_panel = new Box (Orientation.VERTICAL, 16);
-            dialog_panel.get_style_context ().add_class (
-                Constants.CSS_CLASS_APP_DIALOG
-            );
-            dialog_panel.set_halign (Align.CENTER);
-            dialog_panel.set_valign (Align.CENTER);
-            dialog_panel.set_size_request (Constants.DIALOG_WIDTH, -1);
-
-            dialog_title_label = new Label ("");
-            dialog_title_label.get_style_context ().add_class (
-                Constants.CSS_CLASS_DIALOG_TITLE
-            );
-            dialog_panel.pack_start (dialog_title_label, false, false, 16);
-
-            var buttons_box = new Box (Orientation.VERTICAL, 8);
-            buttons_box.margin_start = 24;
-            buttons_box.margin_end = 24;
-            buttons_box.margin_bottom = 24;
-
-            var update_btn = build_dialog_button (
-                Constants.ICON_DIALOG_UPDATE,
-                Constants.DIALOG_BTN_UPDATE
-            );
-            update_btn.get_style_context ().add_class (
-                Constants.CSS_CLASS_DIALOG_BUTTON
-            );
-            update_btn.clicked.connect (() => {
-                handle_dialog_response (Constants.DIALOG_RESPONSE_UPDATE);
-            });
-
-            var uninstall_btn = build_dialog_button (
-                Constants.ICON_DIALOG_UNINSTALL,
-                Constants.DIALOG_BTN_UNINSTALL
-            );
-            uninstall_btn.get_style_context ().add_class (
-                Constants.CSS_CLASS_DIALOG_BUTTON
-            );
-            uninstall_btn.get_style_context ().add_class (
-                Constants.CSS_CLASS_DIALOG_BUTTON_DANGER
-            );
-            uninstall_btn.clicked.connect (() => {
-                handle_dialog_response (Constants.DIALOG_RESPONSE_UNINSTALL);
-            });
-
-            var cancel_btn = build_dialog_button (
-                Constants.ICON_DIALOG_CANCEL,
-                Constants.DIALOG_BTN_CANCEL
-            );
-            cancel_btn.get_style_context ().add_class (
-                Constants.CSS_CLASS_DIALOG_BUTTON
-            );
-            cancel_btn.clicked.connect (() => {
-                hide_dialog_overlay ();
-            });
-
-            buttons_box.pack_start (update_btn, false, false, 0);
-            buttons_box.pack_start (uninstall_btn, false, false, 0);
-            buttons_box.pack_start (cancel_btn, false, false, 0);
-
-            dialog_panel.pack_start (buttons_box, false, false, 0);
-
-            dialog_buttons = { update_btn, uninstall_btn, cancel_btn };
-
-            dialog_backdrop.set_center_widget (dialog_panel);
-            overlay.add_overlay (dialog_backdrop);
-        }
-
-        private void populate_grid () {
+        private void populate_list () {
             var app_names = app_loader.load_app_names ();
             for (int i = 0; i < app_names.length; i++) {
                 var name = app_names[i];
                 var path = app_loader.get_app_path (name);
                 bool installed = app_loader.is_installed (name);
-                flowbox.add (new AppTile (name, path, installed));
+                listbox.add (new AppTile (name, path, installed));
             }
+        }
+
+        private void update_detail_for_row (ListBoxRow row) {
+            var tile = row as AppTile;
+            if (tile == null) return;
+            detail_panel.update_for_app (
+                tile.app_name, tile.app_path, tile.is_installed
+            );
         }
 
         private void connect_signals () {
@@ -314,16 +227,14 @@ namespace DpadStore.Widgets {
                 return false;
             });
 
-            flowbox.child_activated.connect ((child) => {
-                var tile = child as AppTile;
-                if (tile == null) return;
-
-                if (tile.is_installed) {
-                    show_installed_app_dialog (tile);
-                } else {
-                    flowbox.set_sensitive (false);
-                    installer.install (tile.app_name);
+            listbox.row_selected.connect ((row) => {
+                if (row != null) {
+                    update_detail_for_row (row);
                 }
+            });
+
+            detail_panel.action_requested.connect ((app_name, action) => {
+                handle_action (app_name, action);
             });
 
             installer.progress_changed.connect ((app_name, action, message) => {
@@ -341,8 +252,8 @@ namespace DpadStore.Widgets {
                         app_name, message
                     );
                 }
-                status_label.set_text (status);
-                progress_bar.pulse ();
+                console_output.update_status (status);
+                console_output.append_output (message);
                 while (Gtk.events_pending ()) Gtk.main_iteration ();
             });
 
@@ -361,171 +272,174 @@ namespace DpadStore.Widgets {
                         app_name
                     );
                 }
-                status_label.set_text (message);
-                progress_bar.set_fraction (0);
-                flowbox.set_sensitive (true);
+                console_output.finish_operation (message);
+                listbox.set_sensitive (true);
                 update_tile_status (app_name);
+
+                var selected = listbox.get_selected_row ();
+                if (selected != null) {
+                    update_detail_for_row (selected);
+                }
+
+                return_focus_to_list ();
             });
 
             installer.failed.connect ((error_message) => {
-                status_label.set_text (
+                console_output.show_error (
                     Constants.STATUS_ERROR.printf (error_message)
                 );
-                flowbox.set_sensitive (true);
+                listbox.set_sensitive (true);
+                return_focus_to_list ();
             });
+        }
+
+        private void handle_action (string app_name, string action) {
+            if (action == Constants.PI_APPS_PLAY_ACTION) {
+                launch_app (app_name);
+                return;
+            }
+
+            listbox.set_sensitive (false);
+            console_output.start_operation (app_name);
+            detail_panel.set_installing_status ();
+
+            if (action == Constants.PI_APPS_UNINSTALL_ACTION) {
+                installer.uninstall (app_name);
+            } else if (action == Constants.PI_APPS_UPDATE_ACTION) {
+                installer.update (app_name);
+            } else {
+                installer.install (app_name);
+            }
+        }
+
+        private void launch_app (string app_name) {
+            string? desktop_id = find_desktop_file (app_name);
+            if (desktop_id == null) {
+                console_output.show_error (
+                    Constants.ERROR_DESKTOP_NOT_FOUND.printf (app_name)
+                );
+                console_output.show ();
+                return;
+            }
+
+            var app_info = new GLib.DesktopAppInfo (desktop_id);
+            if (app_info == null) {
+                console_output.show_error (
+                    Constants.ERROR_DESKTOP_NOT_FOUND.printf (app_name)
+                );
+                console_output.show ();
+                return;
+            }
+
+            try {
+                app_info.launch (null, null);
+                this.get_application ().quit ();
+            } catch (Error e) {
+                console_output.show_error (
+                    Constants.ERROR_LAUNCH_FAILED.printf (app_name, e.message)
+                );
+                console_output.show ();
+            }
+        }
+
+        private string? find_desktop_file (string app_name) {
+            string lower_name = app_name.down ();
+            string[] search_dirs = {
+                Constants.DESKTOP_FILES_SYSTEM_PATH,
+                Path.build_filename (
+                    Environment.get_home_dir (),
+                    Constants.DESKTOP_FILES_USER_SUBDIR
+                )
+            };
+
+            foreach (string dir_path in search_dirs) {
+                try {
+                    var dir = Dir.open (dir_path, 0);
+                    string? filename;
+                    while ((filename = dir.read_name ()) != null) {
+                        if (!filename.has_suffix (
+                            Constants.DESKTOP_FILE_EXTENSION
+                        )) {
+                            continue;
+                        }
+                        if (filename.down ().contains (lower_name)) {
+                            return filename;
+                        }
+                    }
+                } catch (FileError e) {
+                    continue;
+                }
+            }
+            return null;
         }
 
         private void connect_gamepad_signals () {
             gamepad.direction_pressed.connect ((direction) => {
-                if (dialog_active) {
-                    navigate_dialog (direction);
+                if (focus_on_detail) {
+                    detail_panel.navigate_buttons (direction);
                 } else {
-                    navigate_flowbox (direction);
+                    navigate_listbox (direction);
                 }
             });
 
             gamepad.button_a_pressed.connect (() => {
-                if (dialog_active) {
-                    activate_dialog_button ();
+                if (focus_on_detail) {
+                    detail_panel.activate_focused_button ();
                 } else {
-                    activate_selected_tile ();
+                    focus_on_detail = true;
+                    detail_panel.set_focus_on_buttons ();
                 }
             });
 
             gamepad.button_b_pressed.connect (() => {
-                if (dialog_active) {
-                    hide_dialog_overlay ();
+                if (focus_on_detail) {
+                    return_focus_to_list ();
                 } else {
                     this.get_application ().quit ();
                 }
             });
         }
 
-        private void navigate_flowbox (Backend.GamepadDirection direction) {
-            var selected = flowbox.get_selected_children ();
-            if (selected == null || selected.length () == 0) {
-                var first = flowbox.get_child_at_index (0);
+        private void navigate_listbox (Backend.GamepadDirection direction) {
+            var selected = listbox.get_selected_row ();
+            if (selected == null) {
+                var first = listbox.get_row_at_index (0);
                 if (first != null) {
-                    flowbox.select_child (first);
+                    listbox.select_row (first);
                     first.grab_focus ();
                 }
                 return;
             }
 
-            var current = selected.data;
-            int index = current.get_index ();
-            int columns = (int) flowbox.get_max_children_per_line ();
-            int total = count_flowbox_children ();
+            int index = selected.get_index ();
             int next_index = index;
 
             switch (direction) {
                 case Backend.GamepadDirection.UP:
-                    next_index = index - columns;
-                    break;
-                case Backend.GamepadDirection.DOWN:
-                    next_index = index + columns;
-                    break;
-                case Backend.GamepadDirection.LEFT:
                     next_index = index - 1;
                     break;
-                case Backend.GamepadDirection.RIGHT:
-                    next_index = index + 1;
-                    break;
-            }
-
-            if (next_index < 0 || next_index >= total) return;
-
-            var next_child = flowbox.get_child_at_index (next_index);
-            if (next_child != null) {
-                flowbox.select_child (next_child);
-                next_child.grab_focus ();
-            }
-        }
-
-        private void activate_selected_tile () {
-            var selected = flowbox.get_selected_children ();
-            if (selected == null || selected.length () == 0) return;
-            flowbox.child_activated (selected.data);
-        }
-
-        private int count_flowbox_children () {
-            int count = 0;
-            while (flowbox.get_child_at_index (count) != null) {
-                count++;
-            }
-            return count;
-        }
-
-        private void show_installed_app_dialog (AppTile tile) {
-            dialog_tile = tile;
-            dialog_title_label.set_text (
-                Constants.DIALOG_TITLE.printf (tile.app_name)
-            );
-            dialog_focused_index = dialog_buttons.length - 1;
-            dialog_active = true;
-            dialog_backdrop.show_all ();
-            dialog_buttons[dialog_focused_index].grab_focus ();
-        }
-
-        private void navigate_dialog (Backend.GamepadDirection direction) {
-            int count = dialog_buttons.length;
-            switch (direction) {
-                case Backend.GamepadDirection.UP:
-                    dialog_focused_index =
-                        (dialog_focused_index - 1 + count) % count;
-                    break;
                 case Backend.GamepadDirection.DOWN:
-                    dialog_focused_index =
-                        (dialog_focused_index + 1) % count;
+                    next_index = index + 1;
                     break;
                 default:
                     return;
             }
-            dialog_buttons[dialog_focused_index].grab_focus ();
-        }
 
-        private void activate_dialog_button () {
-            switch (dialog_focused_index) {
-                case 0:
-                    handle_dialog_response (
-                        Constants.DIALOG_RESPONSE_UPDATE
-                    );
-                    break;
-                case 1:
-                    handle_dialog_response (
-                        Constants.DIALOG_RESPONSE_UNINSTALL
-                    );
-                    break;
-                default:
-                    hide_dialog_overlay ();
-                    break;
+            if (next_index < 0) return;
+
+            var next_row = listbox.get_row_at_index (next_index);
+            if (next_row != null) {
+                listbox.select_row (next_row);
+                next_row.grab_focus ();
             }
         }
 
-        private void hide_dialog_overlay () {
-            dialog_active = false;
-            dialog_backdrop.hide ();
-            dialog_tile = null;
-            var selected = flowbox.get_selected_children ();
-            if (selected != null && selected.length () > 0) {
-                selected.data.grab_focus ();
-            }
-        }
-
-        private void handle_dialog_response (int response) {
-            if (dialog_tile == null) return;
-            var tile = dialog_tile;
-            hide_dialog_overlay ();
-
-            switch (response) {
-                case Constants.DIALOG_RESPONSE_UNINSTALL:
-                    flowbox.set_sensitive (false);
-                    installer.uninstall (tile.app_name);
-                    break;
-                case Constants.DIALOG_RESPONSE_UPDATE:
-                    flowbox.set_sensitive (false);
-                    installer.update (tile.app_name);
-                    break;
+        private void return_focus_to_list () {
+            focus_on_detail = false;
+            detail_panel.release_button_focus ();
+            var selected = listbox.get_selected_row ();
+            if (selected != null) {
+                selected.grab_focus ();
             }
         }
 
@@ -541,9 +455,9 @@ namespace DpadStore.Widgets {
 
         private void update_tile_status (string app_name) {
             int i = 0;
-            FlowBoxChild? child;
-            while ((child = flowbox.get_child_at_index (i)) != null) {
-                var tile = child as AppTile;
+            ListBoxRow? row;
+            while ((row = listbox.get_row_at_index (i)) != null) {
+                var tile = row as AppTile;
                 if (tile != null && tile.app_name == app_name) {
                     if (app_loader.is_installed (app_name)) {
                         tile.mark_installed ();

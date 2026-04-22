@@ -70,6 +70,8 @@ executable(
     'src/Backend/GamepadManager.vala',
     'src/Backend/Installer.vala',
     'src/Widgets/AppTile.vala',
+    'src/Widgets/ConsoleOutput.vala',
+    'src/Widgets/DetailPanel.vala',
     'src/Widgets/MainWindow.vala',
     'src/Constants.vala',
     'src/Application.vala',
@@ -77,6 +79,7 @@ executable(
     dependencies: [
         dependency('glib-2.0'),
         dependency('gio-2.0'),
+        dependency('gio-unix-2.0'),
         dependency('gtk+-3.0'),
         dependency('sdl2'),
     ],

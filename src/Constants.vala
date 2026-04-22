@@ -20,6 +20,7 @@ namespace DpadStore.Constants {
     public const string PI_APPS_UNINSTALL_ACTION = "uninstall";
     public const string PI_APPS_UPDATE_ACTION = "update";
     public const string PI_APPS_INSTALLED_STATUS = "installed";
+    public const string PI_APPS_PLAY_ACTION = "play";
     public const string SHELL_PATH = "/bin/bash";
     public const string ANSI_ESCAPE_PATTERN = "\\x1b\\[[0-9;]*[a-zA-Z]";
 
@@ -32,22 +33,32 @@ namespace DpadStore.Constants {
     public const string STATUS_UNINSTALL_COMPLETE = "%s has been uninstalled.";
     public const string STATUS_UPDATE_COMPLETE = "%s has been updated.";
     public const string STATUS_ERROR = "Error: %s";
-    public const string LABEL_INSTALLED = "Installed";
     public const string APP_CATEGORY = "Games";
 
-    // UI labels - Dialog
-    public const string DIALOG_TITLE = "%s is already installed";
-    public const string DIALOG_BTN_UNINSTALL = "Uninstall";
-    public const string DIALOG_BTN_UPDATE = "Update";
-    public const string DIALOG_BTN_CANCEL = "Cancel";
+    // UI labels - Detail panel status
+    public const string LABEL_INSTALLED = "INSTALLED";
+    public const string LABEL_NOT_INSTALLED = "NOT INSTALLED";
+    public const string LABEL_INSTALLING = "INSTALLING";
 
-    // Dialog response IDs
-    public const int DIALOG_RESPONSE_UNINSTALL = 1;
-    public const int DIALOG_RESPONSE_UPDATE = 2;
+    // UI labels - Detail panel action buttons
+    public const string BTN_INSTALL = "INSTALL";
+    public const string BTN_PLAY = "PLAY";
+    public const string BTN_UPDATE = "UPDATE";
+    public const string BTN_UNINSTALL = "UNINSTALL";
+
+    // UI labels - Console output
+    public const string CONSOLE_STARTING = "Starting...";
 
     // Error messages
     public const string ERROR_LOADING_APPS = "Error loading applications: %s\n";
     public const string ERROR_READING_CATEGORIES = "Error reading categories from %s: %s\n";
+    public const string ERROR_DESKTOP_NOT_FOUND = "No .desktop file found for %s";
+    public const string ERROR_LAUNCH_FAILED = "Failed to launch %s: %s";
+
+    // Desktop file paths
+    public const string DESKTOP_FILES_SYSTEM_PATH = "/usr/share/applications";
+    public const string DESKTOP_FILES_USER_SUBDIR = ".local/share/applications";
+    public const string DESKTOP_FILE_EXTENSION = ".desktop";
 
     // GFX asset paths
     public const string GFX_INSTALL_SLUG = "dpad-store";
@@ -57,7 +68,7 @@ namespace DpadStore.Constants {
     public const string GFX_CONTROL_B = "controls_B.png";
 
     // UI labels - Footer
-    public const string FOOTER_LABEL_INSTALL = "Install";
+    public const string FOOTER_LABEL_INSTALL = "Select";
     public const string FOOTER_LABEL_BACK = "Back";
 
     // Gamepad configuration
@@ -71,41 +82,67 @@ namespace DpadStore.Constants {
     public const string WARN_INCOMPATIBLE_CONTROLLER = "Game controller is not compatible";
     public const string WARN_UNABLE_OPEN_CONTROLLER = "Unable to open game controller: %s";
 
-    // Dialog configuration
-    public const int DIALOG_WIDTH = 420;
-
     // Tile configuration
-    public const int TILE_ICON_SIZE = 48;
+    public const int TILE_ICON_SIZE = 64;
     public const int HEADER_ICON_SIZE = 40;
     public const int FOOTER_ICON_SIZE = 24;
-    public const double PASTEL_DARK_FACTOR = 0.55;
-    public const double PASTEL_DARKER_FACTOR = 0.3;
 
-    // Dithering configuration
-    public const int DITHER_TILE_SIZE = 64;
-    public const int DITHER_NOISE_ALPHA = 6;
-    public const double TILE_CORNER_RADIUS = 12.0;
-    public const double GRADIENT_ALPHA = 0.95;
-    public const string CSS_TILE_TRANSPARENT_BG =
-        ".%s:selected { background-image: none; background-color: transparent; }";
+    // Detail panel configuration
+    public const int COVER_IMAGE_SIZE = 200;
+    public const int DETAIL_BUTTON_ICON_SIZE = 20;
+    public const double DETAIL_PANEL_RATIO = 0.55;
 
-    // CSS classes and icon names
-    public const string CSS_CLASS_INSTALLED_BADGE = "installed-badge";
-    public const string CSS_CLASS_DIALOG_BACKDROP = "dialog-backdrop";
-    public const string CSS_CLASS_APP_DIALOG = "app-dialog";
-    public const string CSS_CLASS_DIALOG_TITLE = "dialog-title";
-    public const string CSS_CLASS_DIALOG_BUTTON = "dialog-button";
-    public const string CSS_CLASS_DIALOG_BUTTON_DANGER = "dialog-button-danger";
+    // Console output configuration
+    public const int CONSOLE_MAX_LINES = 500;
+    public const uint CONSOLE_HIDE_DELAY_MS = 3000;
+    public const int CONSOLE_EXPANDED_HEIGHT = 180;
+
+    // CSS classes - Header
     public const string CSS_CLASS_HEADER_BOX = "header-box";
     public const string CSS_CLASS_HEADER_ICON = "header-icon";
     public const string CSS_CLASS_HEADER_TITLE = "header-title";
+
+    // CSS classes - App list tile
     public const string CSS_CLASS_APP_TILE = "app-tile";
+    public const string CSS_CLASS_TILE_NAME = "tile-name";
+    public const string CSS_CLASS_TILE_CATEGORY = "tile-category";
+
+    // CSS classes - Detail panel
+    public const string CSS_CLASS_DETAIL_PANEL = "detail-panel";
+    public const string CSS_CLASS_DETAIL_COVER = "detail-cover";
+    public const string CSS_CLASS_DETAIL_STATUS = "detail-status";
+    public const string CSS_CLASS_DETAIL_STATUS_INSTALLED = "detail-status-installed";
+    public const string CSS_CLASS_DETAIL_STATUS_NOT_INSTALLED = "detail-status-not-installed";
+    public const string CSS_CLASS_DETAIL_STATUS_INSTALLING = "detail-status-installing";
+    public const string CSS_CLASS_ACTION_BUTTON = "action-button";
+    public const string CSS_CLASS_ACTION_BUTTON_PRIMARY = "action-button-primary";
+    public const string CSS_CLASS_ACTION_BUTTON_DANGER = "action-button-danger";
+
+    // CSS classes - Console output
+    public const string CSS_CLASS_CONSOLE_BOX = "console-box";
+    public const string CSS_CLASS_CONSOLE_HEADER = "console-header";
+    public const string CSS_CLASS_CONSOLE_TEXT = "console-text";
+    public const string CSS_CLASS_CONSOLE_TOGGLE = "console-toggle";
+
+    // CSS classes - Layout containers
+    public const string CSS_CLASS_CONTENT_BOX = "content-box";
+    public const string CSS_CLASS_APP_LIST_PANEL = "app-list-panel";
+    public const string CSS_CLASS_DETAIL_PANEL_CONTAINER = "detail-panel-container";
+
+    // CSS classes - Footer
     public const string CSS_CLASS_FOOTER_BOX = "footer-box";
     public const string CSS_CLASS_FOOTER_LABEL = "footer-label";
+
+    // Icon names
     public const string ICON_FALLBACK = "package-x-generic";
-    public const string ICON_DIALOG_UPDATE = "view-refresh-symbolic";
-    public const string ICON_DIALOG_UNINSTALL = "user-trash-symbolic";
-    public const string ICON_DIALOG_CANCEL = "window-close-symbolic";
+    public const string ICON_INSTALL = "system-software-install-symbolic";
+    public const string ICON_PLAY = "media-playback-start-symbolic";
+    public const string ICON_UPDATE = "view-refresh-symbolic";
+    public const string ICON_UNINSTALL = "user-trash-symbolic";
+    public const string ICON_CONSOLE_EXPAND = "pan-down-symbolic";
+    public const string ICON_CONSOLE_COLLAPSE = "pan-up-symbolic";
+    public const string ICON_STATUS_INSTALLED = "software-installed-symbolic";
+    public const string ICON_STATUS_DOWNLOAD = "emblem-downloads-symbolic";
 
     public static string get_gfx_path (string filename) {
         return Path.build_filename (

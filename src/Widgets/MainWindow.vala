@@ -19,7 +19,7 @@ namespace DpadStore.Widgets {
         private bool focus_on_detail;
 
         public MainWindow (Gtk.Application app) {
-            //this.fullscreen ();
+            this.fullscreen ();
             this.set_application (app);
             this.set_decorated (false);
             this.set_default_size (720, 720);

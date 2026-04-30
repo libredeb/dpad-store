@@ -11,11 +11,13 @@ namespace DpadStore.Widgets {
 
         public string app_name { get; private set; }
         public string app_path { get; private set; }
+        public string app_genre { get; private set; }
         public bool is_installed { get; private set; }
 
-        public AppTile (string name, string path, bool installed) {
+        public AppTile (string name, string path, string genre, bool installed) {
             this.app_name = name;
             this.app_path = path;
+            this.app_genre = genre;
             this.is_installed = installed;
 
             get_style_context ().add_class (Constants.CSS_CLASS_APP_TILE);
@@ -57,7 +59,16 @@ namespace DpadStore.Widgets {
             name_label.set_ellipsize (Pango.EllipsizeMode.END);
             name_label.set_max_width_chars (20);
 
+            var genre_label = new Label (genre);
+            genre_label.get_style_context ().add_class (
+                Constants.CSS_CLASS_TILE_CATEGORY
+            );
+            genre_label.halign = Align.START;
+            genre_label.set_ellipsize (Pango.EllipsizeMode.END);
+            genre_label.set_max_width_chars (30);
+
             text_box.pack_start (name_label, false, false, 0);
+            text_box.pack_start (genre_label, false, false, 0);
 
             content_box.pack_start (img, false, false, 0);
             content_box.pack_start (text_box, true, true, 0);

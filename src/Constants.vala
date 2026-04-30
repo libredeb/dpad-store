@@ -34,6 +34,7 @@ namespace DpadStore.Constants {
     public const string STATUS_UPDATE_COMPLETE = "%s has been updated.";
     public const string STATUS_ERROR = "Error: %s";
     public const string APP_CATEGORY = "Games";
+    public const string GENRE_UNKNOWN = "Unknown";
 
     // UI labels - Detail panel status
     public const string LABEL_INSTALLED = "INSTALLED";
@@ -85,7 +86,7 @@ namespace DpadStore.Constants {
     // Tile configuration
     public const int TILE_ICON_SIZE = 64;
     public const int HEADER_ICON_SIZE = 40;
-    public const int FOOTER_ICON_SIZE = 24;
+    public const int FOOTER_ICON_SIZE = 48;
 
     // Detail panel configuration
     public const int COVER_IMAGE_SIZE = 200;

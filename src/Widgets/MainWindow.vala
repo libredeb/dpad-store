@@ -140,7 +140,7 @@ namespace DpadStore.Widgets {
                 }
             }
 
-            var title_label = new Label (Constants.PROGRAM_NAME);
+            var title_label = new Label ("Gamercard Store");
             title_label.get_style_context ().add_class (
                 Constants.CSS_CLASS_HEADER_TITLE
             );
@@ -161,12 +161,12 @@ namespace DpadStore.Widgets {
             left_box.pack_start (
                 build_footer_item (
                     Constants.GFX_CONTROL_A, Constants.FOOTER_LABEL_INSTALL
-                ), false, false, 24
+                ), false, false, 32
             );
             left_box.pack_start (
                 build_footer_item (
                     Constants.GFX_CONTROL_B, Constants.FOOTER_LABEL_BACK
-                ), false, false, 24
+                ), false, false, 32
             );
 
             footer_box.pack_start (left_box, false, false, 0);
@@ -206,8 +206,9 @@ namespace DpadStore.Widgets {
             for (int i = 0; i < app_names.length; i++) {
                 var name = app_names[i];
                 var path = app_loader.get_app_path (name);
+                var genre = app_loader.get_app_genre (name);
                 bool installed = app_loader.is_installed (name);
-                listbox.add (new AppTile (name, path, installed));
+                listbox.add (new AppTile (name, path, genre, installed));
             }
         }
 

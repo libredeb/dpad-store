@@ -10,6 +10,7 @@ namespace DpadStore.Backend {
         private string apps_path;
         private string status_path;
         private string pi_apps_dir;
+        private HashTable<string, string> genre_map;
 
         public AppLoader (string pi_apps_dir) {
             this.pi_apps_dir = pi_apps_dir;
@@ -19,6 +20,7 @@ namespace DpadStore.Backend {
             this.status_path = Path.build_filename (
                 pi_apps_dir, Constants.PI_APPS_DATA_SUBDIR, Constants.PI_APPS_STATUS_SUBDIR
             );
+            this.genre_map = new HashTable<string, string> (str_hash, str_equal);
         }
 
         public GenericArray<string> load_app_names () {
@@ -77,11 +79,17 @@ namespace DpadStore.Backend {
                     if (stripped == "" || !stripped.contains ("|")) {
                         continue;
                     }
-                    string[] parts = stripped.split ("|", 2);
+                    string[] parts = stripped.split ("|", 3);
                     string app_name = parts[0].strip ();
                     string category = parts[1].strip ();
                     if (app_name != "" && !map.contains (app_name)) {
                         map.insert (app_name, category);
+                        if (parts.length > 2) {
+                            string genre = parts[2].strip ();
+                            if (genre != "" && !genre_map.contains (app_name)) {
+                                genre_map.insert (app_name, genre);
+                            }
+                        }
                     }
                 }
             } catch (FileError e) {
@@ -91,6 +99,11 @@ namespace DpadStore.Backend {
 
         public string get_app_path (string app_name) {
             return Path.build_filename (apps_path, app_name);
+        }
+
+        public string get_app_genre (string app_name) {
+            string? genre = genre_map.lookup (app_name);
+            return genre ?? Constants.GENRE_UNKNOWN;
         }
 
         public bool is_installed (string app_name) {

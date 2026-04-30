@@ -80,9 +80,7 @@ row.app-tile:selected label {
 
 /* Detail Panel */
 .detail-panel {
-    background-color: #151718;
     padding: 12px;
-    border-radius: 12px;
 }
 
 .detail-cover {

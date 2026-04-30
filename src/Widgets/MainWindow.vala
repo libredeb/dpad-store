@@ -17,6 +17,7 @@ namespace DpadStore.Widgets {
         private Backend.GamepadManager gamepad;
 
         private bool focus_on_detail;
+        private bool focus_on_console;
 
         public MainWindow (Gtk.Application app) {
             this.fullscreen ();
@@ -28,6 +29,7 @@ namespace DpadStore.Widgets {
             this.set_icon_name (Constants.APP_ID);
 
             focus_on_detail = false;
+            focus_on_console = false;
 
             var pi_apps_dir = Path.build_filename (
                 Environment.get_home_dir (), Constants.PI_APPS_DIR
@@ -385,15 +387,28 @@ namespace DpadStore.Widgets {
 
         private void connect_gamepad_signals () {
             gamepad.direction_pressed.connect ((direction) => {
-                if (focus_on_detail) {
-                    detail_panel.navigate_buttons (direction);
+                if (focus_on_console) {
+                    if (direction == Backend.GamepadDirection.UP) {
+                        focus_on_console = false;
+                        detail_panel.focus_last_button ();
+                    }
+                } else if (focus_on_detail) {
+                    bool consumed = detail_panel.navigate_buttons (direction);
+                    if (!consumed
+                        && direction == Backend.GamepadDirection.DOWN
+                        && console_output.get_visible ()) {
+                        focus_on_console = true;
+                        console_output.focus_toggle_button ();
+                    }
                 } else {
                     navigate_listbox (direction);
                 }
             });
 
             gamepad.button_a_pressed.connect (() => {
-                if (focus_on_detail) {
+                if (focus_on_console) {
+                    console_output.activate_toggle ();
+                } else if (focus_on_detail) {
                     detail_panel.activate_focused_button ();
                 } else {
                     focus_on_detail = true;
@@ -402,7 +417,10 @@ namespace DpadStore.Widgets {
             });
 
             gamepad.button_b_pressed.connect (() => {
-                if (focus_on_detail) {
+                if (focus_on_console) {
+                    focus_on_console = false;
+                    detail_panel.focus_last_button ();
+                } else if (focus_on_detail) {
                     return_focus_to_list ();
                 } else {
                     this.get_application ().quit ();
@@ -446,6 +464,7 @@ namespace DpadStore.Widgets {
 
         private void return_focus_to_list () {
             focus_on_detail = false;
+            focus_on_console = false;
             detail_panel.release_button_focus ();
             var selected = listbox.get_selected_row ();
             if (selected != null) {

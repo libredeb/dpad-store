@@ -147,6 +147,14 @@ namespace DpadStore.Widgets {
             progress_bar.set_fraction (0);
         }
 
+        public void focus_toggle_button () {
+            toggle_button.grab_focus ();
+        }
+
+        public void activate_toggle () {
+            toggle_console ();
+        }
+
         private void toggle_console () {
             expanded = !expanded;
             if (expanded) {

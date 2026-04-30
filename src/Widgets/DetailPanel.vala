@@ -277,22 +277,30 @@ namespace DpadStore.Widgets {
             return has_focus_on_buttons;
         }
 
-        public void navigate_buttons (Backend.GamepadDirection direction) {
-            if (action_buttons.length == 0) return;
+        public bool navigate_buttons (Backend.GamepadDirection direction) {
+            if (action_buttons.length == 0) return false;
 
             int count = action_buttons.length;
             switch (direction) {
                 case Backend.GamepadDirection.UP:
-                    focused_button_index =
-                        (focused_button_index - 1 + count) % count;
+                    if (focused_button_index == 0) return false;
+                    focused_button_index--;
                     break;
                 case Backend.GamepadDirection.DOWN:
-                    focused_button_index =
-                        (focused_button_index + 1) % count;
+                    if (focused_button_index == count - 1) return false;
+                    focused_button_index++;
                     break;
                 default:
-                    return;
+                    return true;
             }
+            action_buttons[focused_button_index].grab_focus ();
+            return true;
+        }
+
+        public void focus_last_button () {
+            if (action_buttons.length == 0) return;
+            has_focus_on_buttons = true;
+            focused_button_index = action_buttons.length - 1;
             action_buttons[focused_button_index].grab_focus ();
         }
 

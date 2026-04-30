@@ -15,7 +15,7 @@ namespace DpadStore.Widgets {
         private Image cover_image;
         private Label status_label;
         private Label size_label;
-        private Image status_icon;
+
         private Box buttons_box;
         private Label description_title;
         private Label description_label;
@@ -57,15 +57,11 @@ namespace DpadStore.Widgets {
             status_box.margin_start = 16;
             status_box.margin_end = 16;
 
-            var status_left = new Box (Orientation.HORIZONTAL, 6);
-            status_left.halign = Align.START;
-            status_icon = new Image ();
             status_label = new Label ("");
             status_label.get_style_context ().add_class (
                 Constants.CSS_CLASS_DETAIL_STATUS
             );
-            status_left.pack_start (status_icon, false, false, 0);
-            status_left.pack_start (status_label, false, false, 0);
+            status_label.halign = Align.START;
 
             size_label = new Label ("");
             size_label.get_style_context ().add_class (
@@ -73,7 +69,7 @@ namespace DpadStore.Widgets {
             );
             size_label.halign = Align.END;
 
-            status_box.pack_start (status_left, false, false, 0);
+            status_box.pack_start (status_label, false, false, 0);
             status_box.pack_end (size_label, false, false, 0);
             this.pack_start (status_box, false, false, 0);
 
@@ -170,16 +166,10 @@ namespace DpadStore.Widgets {
             if (installed) {
                 status_label.set_text (Constants.LABEL_INSTALLED);
                 ctx.add_class (Constants.CSS_CLASS_DETAIL_STATUS_INSTALLED);
-                status_icon.set_from_icon_name (
-                    Constants.ICON_STATUS_INSTALLED, IconSize.MENU
-                );
                 size_label.set_text (size);
             } else {
                 status_label.set_text (Constants.LABEL_NOT_INSTALLED);
                 ctx.add_class (Constants.CSS_CLASS_DETAIL_STATUS_NOT_INSTALLED);
-                status_icon.set_from_icon_name (
-                    Constants.ICON_STATUS_DOWNLOAD, IconSize.MENU
-                );
                 size_label.set_text (size);
             }
         }
@@ -195,9 +185,6 @@ namespace DpadStore.Widgets {
             ctx.add_class (Constants.CSS_CLASS_DETAIL_STATUS_INSTALLING);
 
             status_label.set_text (Constants.LABEL_INSTALLING);
-            status_icon.set_from_icon_name (
-                Constants.ICON_STATUS_DOWNLOAD, IconSize.MENU
-            );
             size_label.hide ();
         }
 

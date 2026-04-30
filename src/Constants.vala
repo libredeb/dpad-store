@@ -60,11 +60,6 @@ namespace DpadStore.Constants {
     public const string ERROR_DESKTOP_NOT_FOUND = "No .desktop file found for %s";
     public const string ERROR_LAUNCH_FAILED = "Failed to launch %s: %s";
 
-    // Desktop file paths
-    public const string DESKTOP_FILES_SYSTEM_PATH = "/usr/share/applications";
-    public const string DESKTOP_FILES_USER_SUBDIR = ".local/share/applications";
-    public const string DESKTOP_FILE_EXTENSION = ".desktop";
-
     // GFX asset paths
     public const string GFX_INSTALL_SLUG = "dpad-store";
     public const string GFX_SUBDIR = "gfx";
@@ -143,14 +138,12 @@ namespace DpadStore.Constants {
 
     // Icon names
     public const string ICON_FALLBACK = "package-x-generic";
-    public const string ICON_INSTALL = "system-software-install-symbolic";
+    public const string ICON_INSTALL = "emblem-downloads-symbolic";
     public const string ICON_PLAY = "media-playback-start-symbolic";
     public const string ICON_UPDATE = "view-refresh-symbolic";
     public const string ICON_UNINSTALL = "user-trash-symbolic";
     public const string ICON_CONSOLE_EXPAND = "pan-down-symbolic";
     public const string ICON_CONSOLE_COLLAPSE = "pan-up-symbolic";
-    public const string ICON_STATUS_INSTALLED = "software-installed-symbolic";
-    public const string ICON_STATUS_DOWNLOAD = "emblem-downloads-symbolic";
 
     public static string get_gfx_path (string filename) {
         return Path.build_filename (

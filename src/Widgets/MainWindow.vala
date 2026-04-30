@@ -96,8 +96,10 @@ namespace DpadStore.Widgets {
             );
             detail_scroll.add (detail_panel);
 
-            int detail_width = (int) (720 * Constants.DETAIL_PANEL_RATIO);
-            int list_width = 720 - detail_width;
+            int content_margins = 24 + 12;
+            int available_width = 720 - content_margins;
+            int detail_width = (int) (available_width * Constants.DETAIL_PANEL_RATIO);
+            int list_width = available_width - detail_width;
             list_scroll.set_size_request (list_width, -1);
             detail_scroll.set_size_request (detail_width, -1);
 
@@ -349,34 +351,36 @@ namespace DpadStore.Widgets {
         }
 
         private string? find_desktop_file (string app_name) {
-            string lower_name = app_name.down ();
-            string[] search_dirs = {
-                Constants.DESKTOP_FILES_SYSTEM_PATH,
-                Path.build_filename (
-                    Environment.get_home_dir (),
-                    Constants.DESKTOP_FILES_USER_SUBDIR
-                )
-            };
+            string normalized = normalize_name (app_name);
+            string? fallback_id = null;
 
-            foreach (string dir_path in search_dirs) {
-                try {
-                    var dir = Dir.open (dir_path, 0);
-                    string? filename;
-                    while ((filename = dir.read_name ()) != null) {
-                        if (!filename.has_suffix (
-                            Constants.DESKTOP_FILE_EXTENSION
-                        )) {
-                            continue;
-                        }
-                        if (filename.down ().contains (lower_name)) {
-                            return filename;
-                        }
+            var all_apps = GLib.AppInfo.get_all ();
+            foreach (var info in all_apps) {
+                string desktop_name = info.get_name ();
+                var desktop = info as GLib.DesktopAppInfo;
+                if (desktop == null) continue;
+
+                if (desktop_name == app_name) {
+                    return desktop.get_id ();
+                }
+
+                if (fallback_id == null) {
+                    string norm_desktop = normalize_name (desktop_name);
+                    if (norm_desktop.contains (normalized)) {
+                        fallback_id = desktop.get_id ();
                     }
-                } catch (FileError e) {
-                    continue;
                 }
             }
-            return null;
+            return fallback_id;
+        }
+
+        private string normalize_name (string name) {
+            return name.down ()
+                .replace ("-", "")
+                .replace ("(", "")
+                .replace (")", "")
+                .replace ("  ", " ")
+                .strip ();
         }
 
         private void connect_gamepad_signals () {

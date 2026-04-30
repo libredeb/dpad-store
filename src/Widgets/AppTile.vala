@@ -12,12 +12,19 @@ namespace DpadStore.Widgets {
         public string app_name { get; private set; }
         public string app_path { get; private set; }
         public string app_genre { get; private set; }
+        public string app_size { get; private set; }
+        public string app_description { get; private set; }
         public bool is_installed { get; private set; }
 
-        public AppTile (string name, string path, string genre, bool installed) {
+        public AppTile (
+            string name, string path, string genre,
+            string size, string description, bool installed
+        ) {
             this.app_name = name;
             this.app_path = path;
             this.app_genre = genre;
+            this.app_size = size;
+            this.app_description = description;
             this.is_installed = installed;
 
             get_style_context ().add_class (Constants.CSS_CLASS_APP_TILE);

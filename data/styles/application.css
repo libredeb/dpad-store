@@ -82,6 +82,7 @@ row.app-tile:selected label {
 .detail-panel {
     background-color: #151718;
     padding: 12px;
+    border-radius: 12px;
 }
 
 .detail-cover {
@@ -106,17 +107,37 @@ row.app-tile:selected label {
     color: #f39c12;
 }
 
+.detail-size {
+    font-size: 14px;
+    font-weight: bold;
+    color: #999999;
+}
+
+/* Detail Panel - Description */
+.detail-description-title {
+    color: #dcc593;
+    font-size: 16px;
+    font-weight: bold;
+    font-style: italic;
+}
+
+.detail-description-text {
+    color: #cccccc;
+    font-size: 13px;
+    font-weight: normal;
+}
+
 /* Action Buttons */
 .action-button {
     background-color: #333333;
     background-image: none;
     color: #ffffff;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
     border-radius: 8px;
     border: 2px solid #444444;
-    padding: 10px;
-    min-height: 40px;
+    padding: 6px 10px;
+    min-height: 28px;
 }
 
 .action-button:focus {

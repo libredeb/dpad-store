@@ -161,12 +161,12 @@ namespace DpadStore.Widgets {
             left_box.pack_start (
                 build_footer_item (
                     Constants.GFX_CONTROL_A, Constants.FOOTER_LABEL_INSTALL
-                ), false, false, 32
+                ), false, false, 24
             );
             left_box.pack_start (
                 build_footer_item (
                     Constants.GFX_CONTROL_B, Constants.FOOTER_LABEL_BACK
-                ), false, false, 32
+                ), false, false, 24
             );
 
             footer_box.pack_start (left_box, false, false, 0);
@@ -207,8 +207,12 @@ namespace DpadStore.Widgets {
                 var name = app_names[i];
                 var path = app_loader.get_app_path (name);
                 var genre = app_loader.get_app_genre (name);
+                var size = app_loader.get_app_size (name);
+                var description = app_loader.get_app_description (name);
                 bool installed = app_loader.is_installed (name);
-                listbox.add (new AppTile (name, path, genre, installed));
+                listbox.add (
+                    new AppTile (name, path, genre, size, description, installed)
+                );
             }
         }
 
@@ -216,7 +220,8 @@ namespace DpadStore.Widgets {
             var tile = row as AppTile;
             if (tile == null) return;
             detail_panel.update_for_app (
-                tile.app_name, tile.app_path, tile.is_installed
+                tile.app_name, tile.app_path, tile.is_installed,
+                tile.app_size, tile.app_description
             );
         }
 

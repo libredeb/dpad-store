@@ -14,8 +14,11 @@ namespace DpadStore.Widgets {
 
         private Image cover_image;
         private Label status_label;
+        private Label size_label;
         private Image status_icon;
         private Box buttons_box;
+        private Label description_title;
+        private Label description_label;
         private Button[] action_buttons;
         private int focused_button_index;
         private bool has_focus_on_buttons;
@@ -28,7 +31,6 @@ namespace DpadStore.Widgets {
             Object (orientation: Orientation.VERTICAL, spacing: 12);
 
             get_style_context ().add_class (Constants.CSS_CLASS_DETAIL_PANEL);
-            this.margin = 12;
             this.valign = Align.START;
 
             action_buttons = {};
@@ -51,27 +53,65 @@ namespace DpadStore.Widgets {
             this.pack_start (cover_image, false, false, 0);
 
             var status_box = new Box (Orientation.HORIZONTAL, 8);
-            status_box.halign = Align.CENTER;
             status_box.margin_top = 4;
+            status_box.margin_start = 16;
+            status_box.margin_end = 16;
 
+            var status_left = new Box (Orientation.HORIZONTAL, 6);
+            status_left.halign = Align.START;
             status_icon = new Image ();
             status_label = new Label ("");
             status_label.get_style_context ().add_class (
                 Constants.CSS_CLASS_DETAIL_STATUS
             );
+            status_left.pack_start (status_icon, false, false, 0);
+            status_left.pack_start (status_label, false, false, 0);
 
-            status_box.pack_start (status_icon, false, false, 0);
-            status_box.pack_start (status_label, false, false, 0);
+            size_label = new Label ("");
+            size_label.get_style_context ().add_class (
+                Constants.CSS_CLASS_DETAIL_SIZE
+            );
+            size_label.halign = Align.END;
+
+            status_box.pack_start (status_left, false, false, 0);
+            status_box.pack_end (size_label, false, false, 0);
             this.pack_start (status_box, false, false, 0);
 
-            buttons_box = new Box (Orientation.VERTICAL, 8);
+            buttons_box = new Box (Orientation.VERTICAL, 6);
             buttons_box.margin_start = 16;
             buttons_box.margin_end = 16;
             buttons_box.margin_top = 8;
             this.pack_start (buttons_box, false, false, 0);
+
+            description_title = new Label (Constants.LABEL_DESCRIPTION);
+            description_title.get_style_context ().add_class (
+                Constants.CSS_CLASS_DETAIL_DESCRIPTION_TITLE
+            );
+            description_title.halign = Align.START;
+            description_title.margin_start = 16;
+            description_title.margin_top = 12;
+            this.pack_start (description_title, false, false, 0);
+
+            description_label = new Label ("");
+            description_label.get_style_context ().add_class (
+                Constants.CSS_CLASS_DETAIL_DESCRIPTION_TEXT
+            );
+            description_label.halign = Align.START;
+            description_label.set_line_wrap (true);
+            description_label.set_line_wrap_mode (Pango.WrapMode.WORD_CHAR);
+            description_label.set_lines (Constants.DESCRIPTION_MAX_LINES);
+            description_label.set_ellipsize (Pango.EllipsizeMode.END);
+            description_label.set_xalign (0);
+            description_label.margin_start = 16;
+            description_label.margin_end = 16;
+            description_label.margin_top = 4;
+            this.pack_start (description_label, false, false, 0);
         }
 
-        public void update_for_app (string name, string path, bool installed) {
+        public void update_for_app (
+            string name, string path, bool installed,
+            string size, string description
+        ) {
             current_app_name = name;
             current_app_path = path;
             current_installed = installed;
@@ -79,10 +119,18 @@ namespace DpadStore.Widgets {
             focused_button_index = 0;
 
             load_cover_image (path);
-            update_status (installed);
+            update_status (installed, size);
             rebuild_buttons (installed);
+            update_description (description);
 
             this.show_all ();
+            if (size == "") {
+                size_label.hide ();
+            }
+            if (description == "") {
+                description_title.hide ();
+                description_label.hide ();
+            }
         }
 
         public void clear () {
@@ -113,7 +161,7 @@ namespace DpadStore.Widgets {
             }
         }
 
-        private void update_status (bool installed) {
+        private void update_status (bool installed, string size = "") {
             var ctx = status_label.get_style_context ();
             ctx.remove_class (Constants.CSS_CLASS_DETAIL_STATUS_INSTALLED);
             ctx.remove_class (Constants.CSS_CLASS_DETAIL_STATUS_NOT_INSTALLED);
@@ -125,13 +173,19 @@ namespace DpadStore.Widgets {
                 status_icon.set_from_icon_name (
                     Constants.ICON_STATUS_INSTALLED, IconSize.MENU
                 );
+                size_label.set_text (size);
             } else {
                 status_label.set_text (Constants.LABEL_NOT_INSTALLED);
                 ctx.add_class (Constants.CSS_CLASS_DETAIL_STATUS_NOT_INSTALLED);
                 status_icon.set_from_icon_name (
                     Constants.ICON_STATUS_DOWNLOAD, IconSize.MENU
                 );
+                size_label.set_text (size);
             }
+        }
+
+        private void update_description (string description) {
+            description_label.set_text (description);
         }
 
         public void set_installing_status () {
@@ -144,6 +198,7 @@ namespace DpadStore.Widgets {
             status_icon.set_from_icon_name (
                 Constants.ICON_STATUS_DOWNLOAD, IconSize.MENU
             );
+            size_label.hide ();
         }
 
         private void clear_buttons () {
@@ -192,7 +247,7 @@ namespace DpadStore.Widgets {
         ) {
             var btn = new Button ();
             var btn_box = new Box (Orientation.HORIZONTAL, 10);
-            btn_box.halign = Align.CENTER;
+            btn_box.halign = Align.START;
 
             var icon = new Image.from_icon_name (
                 icon_name, IconSize.SMALL_TOOLBAR

@@ -41,6 +41,10 @@ namespace DpadStore.Constants {
     public const string LABEL_NOT_INSTALLED = "NOT INSTALLED";
     public const string LABEL_INSTALLING = "INSTALLING";
 
+    // UI labels - Detail panel description
+    public const string LABEL_DESCRIPTION = "Description";
+    public const int DESCRIPTION_MAX_LINES = 3;
+
     // UI labels - Detail panel action buttons
     public const string BTN_INSTALL = "INSTALL";
     public const string BTN_PLAY = "PLAY";
@@ -115,6 +119,9 @@ namespace DpadStore.Constants {
     public const string CSS_CLASS_DETAIL_STATUS_INSTALLED = "detail-status-installed";
     public const string CSS_CLASS_DETAIL_STATUS_NOT_INSTALLED = "detail-status-not-installed";
     public const string CSS_CLASS_DETAIL_STATUS_INSTALLING = "detail-status-installing";
+    public const string CSS_CLASS_DETAIL_SIZE = "detail-size";
+    public const string CSS_CLASS_DETAIL_DESCRIPTION_TITLE = "detail-description-title";
+    public const string CSS_CLASS_DETAIL_DESCRIPTION_TEXT = "detail-description-text";
     public const string CSS_CLASS_ACTION_BUTTON = "action-button";
     public const string CSS_CLASS_ACTION_BUTTON_PRIMARY = "action-button-primary";
     public const string CSS_CLASS_ACTION_BUTTON_DANGER = "action-button-danger";

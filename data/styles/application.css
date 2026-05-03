@@ -125,6 +125,26 @@ row.app-tile:selected label {
     font-weight: normal;
 }
 
+/* Detail Panel - Empty State */
+.empty-state-icon {
+    opacity: 0.4;
+    margin-top: 24px;
+    margin-bottom: 12px;
+}
+
+.empty-state-title {
+    color: #e74c3c;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.empty-state-message {
+    color: #999999;
+    font-size: 14px;
+    font-weight: normal;
+    padding: 8px 0;
+}
+
 /* Action Buttons */
 .action-button {
     background-color: #333333;
@@ -209,6 +229,7 @@ progressbar > trough > progress {
 /* Footer */
 .footer-box {
     background-color: #0a0e11;
+    border-top: 1px solid #333333;
     padding: 8px 16px;
 }
 

@@ -7,129 +7,25 @@ namespace DpadStore.Backend {
 
     public class AppLoader {
 
-        private string apps_path;
         private string status_path;
-        private string pi_apps_dir;
-        private HashTable<string, string> genre_map;
-        private HashTable<string, string> size_map;
-        private HashTable<string, string> description_map;
+        private CatalogService catalog_service;
+        public IconService icon_service { get; private set; }
 
-        public AppLoader (string pi_apps_dir) {
-            this.pi_apps_dir = pi_apps_dir;
-            this.apps_path = Path.build_filename (
-                pi_apps_dir, Constants.PI_APPS_APPS_SUBDIR
+        public AppLoader () {
+            var pi_apps_dir = Path.build_filename (
+                Environment.get_home_dir (), Constants.PI_APPS_DIR
             );
             this.status_path = Path.build_filename (
-                pi_apps_dir, Constants.PI_APPS_DATA_SUBDIR, Constants.PI_APPS_STATUS_SUBDIR
+                pi_apps_dir,
+                Constants.PI_APPS_DATA_SUBDIR,
+                Constants.PI_APPS_STATUS_SUBDIR
             );
-            this.genre_map = new HashTable<string, string> (str_hash, str_equal);
-            this.size_map = new HashTable<string, string> (str_hash, str_equal);
-            this.description_map = new HashTable<string, string> (str_hash, str_equal);
+            this.catalog_service = new CatalogService ();
+            this.icon_service = new IconService ();
         }
 
-        public GenericArray<string> load_app_names () {
-            var category_map = load_categories ();
-            var names = new GenericArray<string> ();
-            try {
-                var dir = Dir.open (apps_path, 0);
-                string? name;
-                while ((name = dir.read_name ()) != null) {
-                    string full_path = Path.build_filename (apps_path, name);
-                    if (!FileUtils.test (full_path, FileTest.IS_DIR)) {
-                        continue;
-                    }
-                    string? category = category_map.lookup (name);
-                    if (category == Constants.APP_CATEGORY) {
-                        names.add (name);
-                    }
-                }
-            } catch (Error e) {
-                stderr.printf (Constants.ERROR_LOADING_APPS, e.message);
-            }
-            return names;
-        }
-
-        private HashTable<string, string> load_categories () {
-            var map = new HashTable<string, string> (str_hash, str_equal);
-
-            // Pi-Apps merges: user overrides first, then defaults. First match wins.
-            string[] sources = {
-                Path.build_filename (
-                    pi_apps_dir, Constants.PI_APPS_DATA_SUBDIR,
-                    Constants.PI_APPS_CATEGORY_OVERRIDES_FILE
-                ),
-                Path.build_filename (
-                    pi_apps_dir, Constants.PI_APPS_ETC_SUBDIR,
-                    Constants.PI_APPS_CATEGORIES_FILE
-                )
-            };
-
-            foreach (string path in sources) {
-                parse_category_file (path, map);
-            }
-
-            return map;
-        }
-
-        private void parse_category_file (string path, HashTable<string, string> map) {
-            if (!FileUtils.test (path, FileTest.EXISTS)) {
-                return;
-            }
-            try {
-                string contents;
-                FileUtils.get_contents (path, out contents);
-                foreach (string line in contents.split ("\n")) {
-                    string stripped = line.strip ();
-                    if (stripped == "" || !stripped.contains ("|")) {
-                        continue;
-                    }
-                    string[] parts = stripped.split ("|", 5);
-                    string app_name = parts[0].strip ();
-                    string category = parts[1].strip ();
-                    if (app_name != "" && !map.contains (app_name)) {
-                        map.insert (app_name, category);
-                        if (parts.length > 2) {
-                            string genre = parts[2].strip ();
-                            if (genre != "" && !genre_map.contains (app_name)) {
-                                genre_map.insert (app_name, genre);
-                            }
-                        }
-                        if (parts.length > 3) {
-                            string size = parts[3].strip ();
-                            if (size != "" && !size_map.contains (app_name)) {
-                                size_map.insert (app_name, size);
-                            }
-                        }
-                        if (parts.length > 4) {
-                            string desc = parts[4].strip ();
-                            if (desc != "" && !description_map.contains (app_name)) {
-                                description_map.insert (app_name, desc);
-                            }
-                        }
-                    }
-                }
-            } catch (FileError e) {
-                stderr.printf (Constants.ERROR_READING_CATEGORIES, path, e.message);
-            }
-        }
-
-        public string get_app_path (string app_name) {
-            return Path.build_filename (apps_path, app_name);
-        }
-
-        public string get_app_genre (string app_name) {
-            string? genre = genre_map.lookup (app_name);
-            return genre ?? Constants.GENRE_UNKNOWN;
-        }
-
-        public string get_app_size (string app_name) {
-            string? size = size_map.lookup (app_name);
-            return size ?? "";
-        }
-
-        public string get_app_description (string app_name) {
-            string? desc = description_map.lookup (app_name);
-            return desc ?? "";
+        public async GenericArray<AppInfo> load_apps () {
+            return yield catalog_service.load_catalog ();
         }
 
         public bool is_installed (string app_name) {

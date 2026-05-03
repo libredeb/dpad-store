@@ -31,10 +31,11 @@ namespace DpadStore.Widgets {
             focus_on_detail = false;
             focus_on_console = false;
 
+            app_loader = new Backend.AppLoader ();
+
             var pi_apps_dir = Path.build_filename (
                 Environment.get_home_dir (), Constants.PI_APPS_DIR
             );
-            app_loader = new Backend.AppLoader (pi_apps_dir);
             installer = new Backend.Installer (pi_apps_dir);
 
             load_css ();
@@ -48,12 +49,7 @@ namespace DpadStore.Widgets {
             console_output.hide ();
             hide_mouse_cursor ();
 
-            var first = listbox.get_row_at_index (0);
-            if (first != null) {
-                listbox.select_row (first);
-                first.grab_focus ();
-                update_detail_for_row (first);
-            }
+            populate_list_async.begin ();
         }
 
         private void load_css () {
@@ -80,7 +76,6 @@ namespace DpadStore.Widgets {
 
             listbox = new ListBox ();
             listbox.set_selection_mode (SelectionMode.SINGLE);
-            populate_list ();
 
             var list_scroll = new ScrolledWindow (null, null);
             list_scroll.set_policy (PolicyType.NEVER, PolicyType.AUTOMATIC);
@@ -90,6 +85,7 @@ namespace DpadStore.Widgets {
             list_scroll.add (listbox);
 
             detail_panel = new DetailPanel ();
+            detail_panel.set_icon_service (app_loader.icon_service);
 
             var detail_scroll = new ScrolledWindow (null, null);
             detail_scroll.set_policy (PolicyType.NEVER, PolicyType.AUTOMATIC);
@@ -205,28 +201,36 @@ namespace DpadStore.Widgets {
             return item_box;
         }
 
-        private void populate_list () {
-            var app_names = app_loader.load_app_names ();
-            for (int i = 0; i < app_names.length; i++) {
-                var name = app_names[i];
-                var path = app_loader.get_app_path (name);
-                var genre = app_loader.get_app_genre (name);
-                var size = app_loader.get_app_size (name);
-                var description = app_loader.get_app_description (name);
-                bool installed = app_loader.is_installed (name);
-                listbox.add (
-                    new AppTile (name, path, genre, size, description, installed)
+        private async void populate_list_async () {
+            var apps = yield app_loader.load_apps ();
+
+            if (apps.length == 0) {
+                detail_panel.show_empty_state ();
+                return;
+            }
+
+            for (int i = 0; i < apps.length; i++) {
+                var info = apps[i];
+                bool installed = app_loader.is_installed (info.name);
+                var tile = new AppTile (
+                    info, app_loader.icon_service, installed
                 );
+                listbox.add (tile);
+            }
+            listbox.show_all ();
+
+            var first = listbox.get_row_at_index (0);
+            if (first != null) {
+                listbox.select_row (first);
+                first.grab_focus ();
+                update_detail_for_row (first);
             }
         }
 
         private void update_detail_for_row (ListBoxRow row) {
             var tile = row as AppTile;
             if (tile == null) return;
-            detail_panel.update_for_app (
-                tile.app_name, tile.app_path, tile.is_installed,
-                tile.app_size, tile.app_description
-            );
+            detail_panel.update_for_app (tile.app_info, tile.is_installed);
         }
 
         private void connect_signals () {
@@ -304,11 +308,6 @@ namespace DpadStore.Widgets {
         }
 
         private void handle_action (string app_name, string action) {
-            if (action == Constants.PI_APPS_PLAY_ACTION) {
-                launch_app (app_name);
-                return;
-            }
-
             listbox.set_sensitive (false);
             console_output.start_operation (app_name);
             detail_panel.set_installing_status ();
@@ -320,69 +319,6 @@ namespace DpadStore.Widgets {
             } else {
                 installer.install (app_name);
             }
-        }
-
-        private void launch_app (string app_name) {
-            string? desktop_id = find_desktop_file (app_name);
-            if (desktop_id == null) {
-                console_output.show_error (
-                    Constants.ERROR_DESKTOP_NOT_FOUND.printf (app_name)
-                );
-                console_output.show ();
-                return;
-            }
-
-            var app_info = new GLib.DesktopAppInfo (desktop_id);
-            if (app_info == null) {
-                console_output.show_error (
-                    Constants.ERROR_DESKTOP_NOT_FOUND.printf (app_name)
-                );
-                console_output.show ();
-                return;
-            }
-
-            try {
-                app_info.launch (null, null);
-                this.get_application ().quit ();
-            } catch (Error e) {
-                console_output.show_error (
-                    Constants.ERROR_LAUNCH_FAILED.printf (app_name, e.message)
-                );
-                console_output.show ();
-            }
-        }
-
-        private string? find_desktop_file (string app_name) {
-            string normalized = normalize_name (app_name);
-            string? fallback_id = null;
-
-            var all_apps = GLib.AppInfo.get_all ();
-            foreach (var info in all_apps) {
-                string desktop_name = info.get_name ();
-                var desktop = info as GLib.DesktopAppInfo;
-                if (desktop == null) continue;
-
-                if (desktop_name == app_name) {
-                    return desktop.get_id ();
-                }
-
-                if (fallback_id == null) {
-                    string norm_desktop = normalize_name (desktop_name);
-                    if (norm_desktop.contains (normalized)) {
-                        fallback_id = desktop.get_id ();
-                    }
-                }
-            }
-            return fallback_id;
-        }
-
-        private string normalize_name (string name) {
-            return name.down ()
-                .replace ("-", "")
-                .replace ("(", "")
-                .replace (")", "")
-                .replace ("  ", " ")
-                .strip ();
         }
 
         private void connect_gamepad_signals () {
@@ -487,7 +423,7 @@ namespace DpadStore.Widgets {
             ListBoxRow? row;
             while ((row = listbox.get_row_at_index (i)) != null) {
                 var tile = row as AppTile;
-                if (tile != null && tile.app_name == app_name) {
+                if (tile != null && tile.app_info.name == app_name) {
                     if (app_loader.is_installed (app_name)) {
                         tile.mark_installed ();
                     } else {

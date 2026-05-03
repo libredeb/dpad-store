@@ -24,8 +24,8 @@ namespace DpadStore.Widgets {
         private bool has_focus_on_buttons;
 
         private string? current_app_name;
-        private string? current_app_path;
         private bool current_installed;
+        private Backend.IconService? icon_service;
 
         public DetailPanel () {
             Object (orientation: Orientation.VERTICAL, spacing: 12);
@@ -39,6 +39,10 @@ namespace DpadStore.Widgets {
             current_app_name = null;
 
             build_ui ();
+        }
+
+        public void set_icon_service (Backend.IconService svc) {
+            this.icon_service = svc;
         }
 
         private void build_ui () {
@@ -104,26 +108,22 @@ namespace DpadStore.Widgets {
             this.pack_start (description_label, false, false, 0);
         }
 
-        public void update_for_app (
-            string name, string path, bool installed,
-            string size, string description
-        ) {
-            current_app_name = name;
-            current_app_path = path;
+        public void update_for_app (Backend.AppInfo info, bool installed) {
+            current_app_name = info.name;
             current_installed = installed;
             has_focus_on_buttons = false;
             focused_button_index = 0;
 
-            load_cover_image (path);
-            update_status (installed, size);
+            load_cover_image_async.begin (info);
+            update_status (installed, info.size);
             rebuild_buttons (installed);
-            update_description (description);
+            update_description (info.description);
 
             this.show_all ();
-            if (size == "") {
+            if (info.size == "") {
                 size_label.hide ();
             }
-            if (description == "") {
+            if (info.description == "") {
                 description_title.hide ();
                 description_label.hide ();
             }
@@ -136,24 +136,28 @@ namespace DpadStore.Widgets {
             clear_buttons ();
         }
 
-        private void load_cover_image (string path) {
-            string icon_path = Path.build_filename (path, "icon-64.png");
-            if (FileUtils.test (icon_path, FileTest.EXISTS)) {
+        private async void load_cover_image_async (Backend.AppInfo info) {
+            cover_image.set_from_icon_name (
+                Constants.ICON_FALLBACK, IconSize.DIALOG
+            );
+
+            if (icon_service == null) {
+                return;
+            }
+
+            string? path = yield icon_service.ensure_icon (
+                info.id, info.icon_url
+            );
+            if (path != null) {
                 try {
                     var pixbuf = new Gdk.Pixbuf.from_file_at_scale (
-                        icon_path, Constants.COVER_IMAGE_SIZE,
+                        path, Constants.COVER_IMAGE_SIZE,
                         Constants.COVER_IMAGE_SIZE, false
                     );
                     cover_image.set_from_pixbuf (pixbuf);
                 } catch (Error e) {
-                    cover_image.set_from_icon_name (
-                        Constants.ICON_FALLBACK, IconSize.DIALOG
-                    );
+                    // Keep fallback icon
                 }
-            } else {
-                cover_image.set_from_icon_name (
-                    Constants.ICON_FALLBACK, IconSize.DIALOG
-                );
             }
         }
 
@@ -201,15 +205,9 @@ namespace DpadStore.Widgets {
 
             if (installed) {
                 add_action_button (
-                    Constants.ICON_PLAY,
-                    Constants.BTN_PLAY,
-                    Constants.CSS_CLASS_ACTION_BUTTON_PRIMARY,
-                    Constants.PI_APPS_PLAY_ACTION
-                );
-                add_action_button (
                     Constants.ICON_UPDATE,
                     Constants.BTN_UPDATE,
-                    Constants.CSS_CLASS_ACTION_BUTTON,
+                    Constants.CSS_CLASS_ACTION_BUTTON_PRIMARY,
                     Constants.PI_APPS_UPDATE_ACTION
                 );
                 add_action_button (
@@ -307,6 +305,41 @@ namespace DpadStore.Widgets {
         public void activate_focused_button () {
             if (action_buttons.length == 0) return;
             action_buttons[focused_button_index].clicked ();
+        }
+
+        public void show_empty_state () {
+            current_app_name = null;
+            clear_buttons ();
+
+            cover_image.set_from_icon_name (
+                Constants.ICON_NO_CONNECTION, IconSize.DIALOG
+            );
+            cover_image.pixel_size = Constants.COVER_IMAGE_SIZE / 2;
+            cover_image.get_style_context ().add_class (
+                Constants.CSS_CLASS_EMPTY_STATE_ICON
+            );
+
+            var ctx = status_label.get_style_context ();
+            ctx.remove_class (Constants.CSS_CLASS_DETAIL_STATUS_INSTALLED);
+            ctx.remove_class (Constants.CSS_CLASS_DETAIL_STATUS_NOT_INSTALLED);
+            ctx.remove_class (Constants.CSS_CLASS_DETAIL_STATUS_INSTALLING);
+
+            status_label.set_text (Constants.LABEL_NO_CATALOG_TITLE);
+            status_label.get_style_context ().add_class (
+                Constants.CSS_CLASS_EMPTY_STATE_TITLE
+            );
+            size_label.hide ();
+
+            description_title.hide ();
+            description_label.set_text (Constants.LABEL_NO_CATALOG_MESSAGE);
+            description_label.get_style_context ().add_class (
+                Constants.CSS_CLASS_EMPTY_STATE_MESSAGE
+            );
+            description_label.set_lines (-1);
+            description_label.set_ellipsize (Pango.EllipsizeMode.NONE);
+            description_label.show ();
+
+            this.show ();
         }
 
         public void refresh_for_state (bool installed) {

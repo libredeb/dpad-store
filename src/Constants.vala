@@ -7,20 +7,23 @@ namespace DpadStore.Constants {
     public const string APP_ID = "io.github.libredeb.dpad-store";
     public const string PROGRAM_NAME = "D-Pad Store";
 
+    // Remote catalog
+    public const string CATALOG_URL =
+        "https://cdn.jsdelivr.net/gh/libredeb/pi-apps-games@main/catalog.json";
+    public const string CACHE_DIR_NAME = "dpad-store";
+    public const string CACHE_CATALOG_FILE = "catalog.json";
+    public const string CACHE_ICONS_DIR = "icons";
+    public const string CACHE_ICON_EXTENSION = ".png";
+
     // Pi-Apps paths and values
     public const string PI_APPS_DIR = "pi-apps";
-    public const string PI_APPS_APPS_SUBDIR = "apps";
     public const string PI_APPS_DATA_SUBDIR = "data";
     public const string PI_APPS_STATUS_SUBDIR = "status";
-    public const string PI_APPS_ETC_SUBDIR = "etc";
-    public const string PI_APPS_CATEGORIES_FILE = "categories";
-    public const string PI_APPS_CATEGORY_OVERRIDES_FILE = "category-overrides";
     public const string PI_APPS_MANAGE_SCRIPT = "manage";
     public const string PI_APPS_INSTALL_ACTION = "install";
     public const string PI_APPS_UNINSTALL_ACTION = "uninstall";
     public const string PI_APPS_UPDATE_ACTION = "update";
     public const string PI_APPS_INSTALLED_STATUS = "installed";
-    public const string PI_APPS_PLAY_ACTION = "play";
     public const string SHELL_PATH = "/bin/bash";
     public const string ANSI_ESCAPE_PATTERN = "\\x1b\\[[0-9;]*[a-zA-Z]";
 
@@ -33,8 +36,14 @@ namespace DpadStore.Constants {
     public const string STATUS_UNINSTALL_COMPLETE = "%s has been uninstalled.";
     public const string STATUS_UPDATE_COMPLETE = "%s has been updated.";
     public const string STATUS_ERROR = "Error: %s";
-    public const string APP_CATEGORY = "Games";
     public const string GENRE_UNKNOWN = "Unknown";
+
+    // UI labels - Empty state
+    public const string LABEL_NO_CATALOG_TITLE = "No games available";
+    public const string LABEL_NO_CATALOG_MESSAGE =
+        "Could not connect to the internet and no cached catalog was found. "
+        + "Please check your network connection and try again.";
+    public const string ICON_NO_CONNECTION = "network-offline-symbolic";
 
     // UI labels - Detail panel status
     public const string LABEL_INSTALLED = "INSTALLED";
@@ -47,7 +56,6 @@ namespace DpadStore.Constants {
 
     // UI labels - Detail panel action buttons
     public const string BTN_INSTALL = "INSTALL";
-    public const string BTN_PLAY = "PLAY";
     public const string BTN_UPDATE = "UPDATE";
     public const string BTN_UNINSTALL = "UNINSTALL";
 
@@ -55,10 +63,16 @@ namespace DpadStore.Constants {
     public const string CONSOLE_STARTING = "Starting...";
 
     // Error messages
-    public const string ERROR_LOADING_APPS = "Error loading applications: %s\n";
-    public const string ERROR_READING_CATEGORIES = "Error reading categories from %s: %s\n";
-    public const string ERROR_DESKTOP_NOT_FOUND = "No .desktop file found for %s";
-    public const string ERROR_LAUNCH_FAILED = "Failed to launch %s: %s";
+    public const string ERROR_FETCHING_CATALOG = "Failed to fetch remote catalog: %s";
+    public const string ERROR_PARSING_CATALOG = "Failed to parse catalog JSON: %s";
+    public const string ERROR_NO_CATALOG = "No catalog available (no network and no cache)";
+    public const string ERROR_SAVING_CACHE = "Failed to save catalog cache: %s";
+    public const string ERROR_DOWNLOADING_ICON = "Failed to download icon for %s: %s";
+
+    // Info messages
+    public const string INFO_CATALOG_LOADED = "Catalog loaded: %d games, version %lld";
+    public const string INFO_USING_CACHE = "Using cached catalog";
+    public const string INFO_CATALOG_UP_TO_DATE = "Catalog is up to date (version %lld)";
 
     // GFX asset paths
     public const string GFX_INSTALL_SLUG = "dpad-store";
@@ -121,6 +135,11 @@ namespace DpadStore.Constants {
     public const string CSS_CLASS_ACTION_BUTTON_PRIMARY = "action-button-primary";
     public const string CSS_CLASS_ACTION_BUTTON_DANGER = "action-button-danger";
 
+    // CSS classes - Detail panel empty state
+    public const string CSS_CLASS_EMPTY_STATE_ICON = "empty-state-icon";
+    public const string CSS_CLASS_EMPTY_STATE_TITLE = "empty-state-title";
+    public const string CSS_CLASS_EMPTY_STATE_MESSAGE = "empty-state-message";
+
     // CSS classes - Console output
     public const string CSS_CLASS_CONSOLE_BOX = "console-box";
     public const string CSS_CLASS_CONSOLE_HEADER = "console-header";
@@ -139,7 +158,6 @@ namespace DpadStore.Constants {
     // Icon names
     public const string ICON_FALLBACK = "package-x-generic";
     public const string ICON_INSTALL = "emblem-downloads-symbolic";
-    public const string ICON_PLAY = "media-playback-start-symbolic";
     public const string ICON_UPDATE = "view-refresh-symbolic";
     public const string ICON_UNINSTALL = "user-trash-symbolic";
     public const string ICON_CONSOLE_EXPAND = "pan-down-symbolic";

@@ -66,8 +66,11 @@ executable(
     meson.project_name(),
     config_file,
     asresources,
+    'src/Backend/AppInfo.vala',
     'src/Backend/AppLoader.vala',
+    'src/Backend/CatalogService.vala',
     'src/Backend/GamepadManager.vala',
+    'src/Backend/IconService.vala',
     'src/Backend/Installer.vala',
     'src/Widgets/AppTile.vala',
     'src/Widgets/ConsoleOutput.vala',
@@ -82,6 +85,8 @@ executable(
         dependency('gio-unix-2.0'),
         dependency('gtk+-3.0'),
         dependency('sdl2'),
+        dependency('libsoup-2.4'),
+        dependency('json-glib-1.0'),
     ],
     c_args: [
         '-w'
